@@ -1,0 +1,1693 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Astra V3.13.7</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+:root {
+  --background: #000;
+  --foreground: #fff;
+  --fg-secondary: #ccc;
+  --muted: #888;
+  --muted-dim: #555;
+  --card: #0a0a0a;
+  --primary: hsl(0,56%,23%);
+  --primary-glow: hsl(0,56%,23%,0.18);
+  --secondary: #141414;
+  --border: #1f1f1f;
+  --border-soft: #161616;
+  --destructive: hsl(0,60%,50%);
+  --dante: #aaa;
+  --max-color: #848a84;
+  --radius: 0px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { height: 100%; }
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Libre Baskerville', Georgia, serif;
+  background-image:
+    radial-gradient(ellipse at 15% 50%, hsl(0 56% 23% / 0.04) 0%, transparent 60%),
+    radial-gradient(ellipse at 85% 20%, hsl(213 38% 16% / 0.03) 0%, transparent 50%);
+}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted-dim); }
+
+@keyframes fadeBlur { from { opacity:0; filter:blur(4px); } to { opacity:1; filter:blur(0); } }
+@keyframes slideUp { from { opacity:0; transform:translateY(15px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeReveal { from { opacity:0; clip-path:polygon(0 0,0 0,0 100%,0 100%); } to { opacity:1; clip-path:polygon(0 0,100% 0,100% 100%,0 100%); } }
+@keyframes pulseDot { 0%,100%{opacity:.2;transform:scale(1);} 50%{opacity:.8;transform:scale(1.2);} }
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+
+.fade-blur { animation: fadeBlur 0.8s cubic-bezier(0.23,1,0.32,1) both; }
+.slide-up { animation: slideUp 0.6s cubic-bezier(0.23,1,0.32,1) both; }
+.fade-reveal { animation: fadeReveal 0.8s cubic-bezier(0.23,1,0.32,1) both; }
+.pulse-dot { animation: pulseDot 3s infinite; }
+.cursor-blink { animation: blink 1s step-end infinite; }
+.fade-in { animation: fadeIn 0.8s ease both; }
+
+/* layout */
+.dashboard { display:flex; flex-direction:column; min-height:100vh; }
+.main-grid { display:grid; grid-template-columns: minmax(220px,260px) 1fr minmax(220px,280px); min-height:calc(100vh - 200px); border-top:1px solid var(--border); margin:0 auto; width:100%; max-width:1400px; }
+@media(max-width:900px){
+  .main-grid { grid-template-columns: 1fr; }
+  .left-col, .right-col { border-right:none; border-bottom:1px solid var(--border); max-width:100%; min-width:0; }
+}
+.left-col { border-right:1px solid var(--border); padding:1rem 0.75rem; display:flex; flex-direction:column; gap:1rem; min-width:220px; max-width:260px; }
+.center-col { border-right:1px solid var(--border); padding:1rem; display:flex; flex-direction:column; align-items:center; gap:0.75rem; flex:1; }
+.right-col { padding:1rem 0.75rem; display:flex; flex-direction:column; gap:1rem; min-width:220px; max-width:280px; }
+
+/* typography helpers */
+.mono { font-family:'JetBrains Mono',monospace; }
+.serif { font-family:'Libre Baskerville',serif; }
+.text-xs { font-size:0.55rem; }
+.text-sm { font-size:0.65rem; }
+.text-base { font-size:0.8rem; }
+.text-lg { font-size:1rem; }
+.text-xl { font-size:1.2rem; }
+.text-2xl { font-size:1.5rem; }
+.text-3xl { font-size:2.2rem; }
+.text-4xl { font-size:2.5rem; }
+
+.text-fg-secondary { color:var(--fg-secondary); }
+.text-muted { color:var(--muted); }
+.text-muted-dim { color:var(--muted-dim); }
+.text-primary { color:var(--primary); }
+.text-destructive { color:var(--destructive); }
+.text-dante { color:var(--dante); }
+.text-max { color:var(--max-color); }
+.text-foreground { color:var(--foreground); }
+
+.tracking-wide { letter-spacing:2px; }
+.tracking-wider { letter-spacing:3px; }
+.uppercase { text-transform:uppercase; }
+.italic { font-style:italic; }
+
+/* section label */
+.section-label { font-family:'JetBrains Mono',monospace; font-size:0.45rem; letter-spacing:3px; text-transform:uppercase; color:var(--muted-dim); margin-bottom:0.375rem; display:flex; align-items:center; gap:0.375rem; }
+.section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* astra button */
+.astra-btn {
+  background:transparent; border:1px solid var(--border); color:var(--fg-secondary);
+  padding:0.125rem 0.5rem; font-family:'JetBrains Mono',monospace; font-size:0.55rem;
+  letter-spacing:1px; cursor:pointer; transition:all 0.15s; position:relative;
+  overflow:hidden;
+}
+.astra-btn:hover { color:var(--foreground); border-color:var(--muted-dim); transform:translateY(-1px); }
+.astra-btn.active { border-color:var(--primary); color:var(--foreground); }
+
+/* input / textarea / select */
+.astra-input {
+  background:var(--secondary); border:1px solid var(--border); color:var(--foreground);
+  font-family:'JetBrains Mono',monospace; font-size:0.6rem; padding:0.5rem;
+  width:100%; outline:none; transition:border-color 0.2s;
+}
+.astra-input:focus { border-color:var(--primary); }
+.astra-textarea { resize:none; height:10rem; font-family:'Libre Baskerville',serif; font-size:0.8rem; }
+
+/* modal */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(4px); z-index:50; display:flex; align-items:center; justify-content:center; }
+.modal-box { border:1px solid var(--border); background:var(--card); padding:1.5rem; width:300px; display:flex; flex-direction:column; gap:0.75rem; }
+.modal-box h3 { font-family:'JetBrains Mono',monospace; font-size:0.7rem; letter-spacing:2px; text-transform:uppercase; }
+
+/* progress line */
+.horizon-row { display:flex; justify-content:space-between; align-items:baseline; padding:0.125rem 0; border-bottom:1px solid var(--border-soft); transition:all 0.15s; }
+.horizon-row:hover { border-bottom-color:var(--primary); transform:translateX(2px); }
+
+/* table */
+.astra-table { font-family:'JetBrains Mono',monospace; font-size:0.5rem; width:100%; border-collapse:collapse; }
+.astra-table th, .astra-table td { padding:0.25rem; border:1px solid var(--border-soft); }
+.astra-table th { text-align:left; }
+.astra-table tr:hover { background:rgba(255,255,255,0.02); }
+.today-col { background:rgba(255,255,255,0.04); color:var(--foreground); }
+
+/* pomodoro progress dots */
+.dot-row { display:flex; gap:2px; flex-wrap:wrap; }
+.dot { width:6px; height:6px; border-radius:2px; transition:all 0.2s; }
+.dot-active { background:var(--primary); box-shadow:0 0 5px var(--primary-glow); }
+.dot-filled { background:rgba(139,30,30,0.5); }
+.dot-empty { background:var(--border); }
+
+/* calendar iframe */
+.cal-wrap { border:1px solid var(--border); overflow:hidden; filter:invert(1) hue-rotate(180deg) brightness(0.8); }
+.cal-wrap iframe { width:100%; height:250px; border:none; display:block; }
+
+/* note card */
+.note-card { border:1px solid var(--border); padding:0.625rem; cursor:pointer; transition:all 0.15s; }
+.note-card:hover { border-color:var(--primary); transform:translateY(-2px); }
+
+/* shortcuts */
+.shortcut-link { text-decoration:none; color:var(--muted-dim); font-family:'JetBrains Mono',monospace; font-size:0.5rem; text-transform:uppercase; letter-spacing:1px; padding:0.125rem 0.5rem; border:1px solid transparent; transition:all 0.15s; }
+.shortcut-link:hover { color:var(--foreground); border-color:var(--border); transform:translateY(-1px); }
+
+/* search form */
+.search-form { display:flex; align-items:center; gap:0.5rem; }
+.search-input { background:transparent; border:1px solid var(--border); color:var(--foreground); font-family:'Libre Baskerville',serif; font-size:0.7rem; padding:0.375rem 0.75rem; width:12rem; outline:none; transition:border-color 0.2s; }
+.search-input::placeholder { color:rgba(85,85,85,0.6); }
+.search-input:focus { border-color:var(--primary); }
+
+/* tabs */
+.tabs-row { display:flex; gap:0.25rem; flex-wrap:wrap; justify-content:center; }
+
+/* meta progress bar */
+.meta-bar { height:1px; background:var(--border); position:relative; margin-top:2px; }
+.meta-fill { height:1px; background:var(--primary); position:absolute; top:0; left:0; transition:width 1s; }
+
+/* diary dots */
+.diary-dot { width:1.5rem; height:1.5rem; display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono',monospace; font-size:0.45rem; cursor:pointer; transition:all 0.15s; border:1px solid var(--border-soft); color:var(--muted-dim); }
+.diary-dot.filled { background:rgba(139,30,30,0.08); color:var(--fg-secondary); }
+.diary-dot.current { border-color:var(--primary); color:var(--foreground); background:rgba(139,30,30,0.12); }
+.diary-dot:hover { border-color:var(--primary); }
+
+/* header */
+header { display:flex; flex-direction:column; align-items:center; padding:1.25rem 1rem 0.75rem; gap:0.25rem; }
+
+/* progress bar fixed */
+.day-bar { position:fixed; top:0; left:0; height:2px; z-index:50; background:linear-gradient(to right, transparent, rgba(139,30,30,0.5), rgba(139,30,30,0.2)); box-shadow:0 0 10px rgba(139,30,30,0.3); transition:width 1s cubic-bezier(0.23,1,0.32,1); }
+
+/* footer */
+footer { border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0.625rem 1rem; gap:0.75rem; flex-wrap:wrap; margin-top:auto; }
+
+/* world clocks */
+.clock-group { display:flex; gap:2rem; font-family:'JetBrains Mono',monospace; font-size:0.55rem; color:var(--muted-dim); letter-spacing:3px; text-transform:uppercase; }
+.clock-item { display:flex; flex-direction:column; align-items:center; gap:2px; cursor:default; }
+.clock-time { font-size:0.8rem; color:var(--fg-secondary); letter-spacing:0.5px; }
+
+/* greeting */
+.greeting { font-size:2.5rem; font-family:'Libre Baskerville',serif; color:var(--foreground); letter-spacing:-0.5px; white-space:nowrap; }
+.greeting-name { font-style:italic; background:linear-gradient(135deg, #fff 30%, #888); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+/* dialogue */
+.dialogue { display:flex; flex-direction:column; align-items:center; gap:0.25rem; max-width:500px; text-align:center; margin-bottom:0.75rem; }
+.dia-max { font-size:0.65rem; font-style:italic; color:var(--max-color); font-family:'JetBrains Mono',monospace; min-height:1.3em; }
+.dia-dante { font-size:0.65rem; font-style:italic; color:var(--dante); font-family:'Libre Baskerville',serif; min-height:1.3em; }
+
+/* spotify stub */
+.spotify-box { border:1px solid var(--border); padding:0.625rem; background:rgba(10,10,10,0.4); transition:all 0.2s; }
+.spotify-box:hover { border-color:var(--primary); box-shadow:0 0 15px var(--primary-glow); }
+
+/* tracker heatmap */
+.heat-dot { width:6px; height:6px; border-radius:2px; }
+.heat-on { background:rgba(139,30,30,0.7); }
+.heat-today { background:var(--primary); box-shadow:0 0 5px var(--primary-glow); }
+.heat-off { background:var(--border); }
+
+/* acervo quotes */
+.acervo-item { border-left:1px solid var(--border); padding:0.375rem 0.75rem; transition:border-color 0.2s; }
+.acervo-item:hover { border-left-color:var(--primary); }
+
+/* stopwatch */
+.big-mono { font-family:'JetBrains Mono',monospace; font-size:2rem; color:var(--foreground); letter-spacing:1px; }
+
+/* KPI block */
+.kpi-block { border-left:1px solid var(--border); padding:0.25rem 0.75rem; transition:all 0.15s; }
+.kpi-block:hover { border-left-color:var(--primary); transform:translateX(2px); }
+.kpi-value { display:block; font-family:'JetBrains Mono',monospace; font-size:1rem; font-weight:300; color:var(--foreground); }
+.kpi-label { font-family:'JetBrains Mono',monospace; font-size:0.45rem; color:var(--muted); }
+
+/* hub label */
+.hub-label { font-family:'JetBrains Mono',monospace; font-size:0.4rem; letter-spacing:6px; color:rgba(85,85,85,0.2); margin:0.75rem 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+/* =========================================
+   BACKUP AUTOMÁTICO (servidor Debian)
+   ========================================= */
+const BACKUP_CONFIG = {
+  serverUrl: 'http://192.168.1.15:5000', // ← CAMBIA ESTA IP POR LA DE TU SERVIDOR
+  secretKey: 'GilbertDuMontier_MarquisDeLafayette1312#',
+  autoBackup: true,
+  lastBackup: localStorage.getItem('lastBackup') || null
+};
+
+async function generarToken(data) {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(BACKUP_CONFIG.secretKey),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const jsonString = typeof data === 'string' ? data : JSON.stringify(data, Object.keys(data).sort());
+  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(jsonString));
+  return Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function collectAllData() {
+  // Recolecta todo lo que hay en localStorage
+  const snapshot = {};
+  const keys = [
+    'astra_notes', 'diario_data', 'contexto_events',
+    'tracker_data', 'pomodoroCount', 'pomodoroHistory',
+    'gcal_url', 'public_mode'
+  ];
+  keys.forEach(k => {
+    const v = localStorage.getItem(k);
+    if (v) snapshot[k] = v;
+  });
+  return {
+    timestamp: new Date().toISOString(),
+    type: 'manual',
+    version: '2.0',
+    data: snapshot
+  };
+}
+
+async function createBackup(type = 'manual') {
+  const data = collectAllData();
+  data.type = type;
+  try {
+    const token = await generarToken(JSON.stringify(data, Object.keys(data).sort()));
+    const response = await fetch(`${BACKUP_CONFIG.serverUrl}/backup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Backup-Token': token
+      },
+      body: JSON.stringify(data)
+    });
+    const result = await response.json();
+    if (result.status === 'success') {
+      const now = new Date().toISOString();
+      localStorage.setItem('lastBackup', now);
+      BACKUP_CONFIG.lastBackup = now;
+      return { ok: true, msg: '✅ Backup completado en servidor' };
+    } else {
+      throw new Error(result.message || 'Error en servidor');
+    }
+  } catch (err) {
+    console.error(err);
+    return { ok: false, msg: '❌ Error al conectar con servidor' };
+  }
+}
+
+function checkAndRunAutoBackup() {
+  if (!BACKUP_CONFIG.autoBackup) return;
+  const last = BACKUP_CONFIG.lastBackup;
+  if (!last) {
+    setTimeout(() => createBackup('automatic'), 5000);
+    return;
+  }
+  const days = Math.floor((Date.now() - new Date(last)) / (1000 * 60 * 60 * 24));
+  if (days >= 7) {
+    setTimeout(() => createBackup('automatic'), 5000);
+  }
+}
+
+/* =========================================
+   DATA
+   ========================================= */
+const acervo = [
+  {t:'"La rebelión consiste en mirar una rosa hasta pulverizarse los ojos."', a:'Alejandra Pizarnik'},
+  {t:'"Escribo para que lo que me hiere no sea."', a:'Alejandra Pizarnik'},
+  {t:'"Y sobre todo mirar con inocencia. Como si no hubiera historia."', a:'Alejandra Pizarnik'},
+  {t:'"Ojalá pudiera vivir solamente en éxtasis, haciendo el cuerpo del poema con mi cuerpo."', a:'Alejandra Pizarnik'},
+  {t:'"Los filósofos no han hecho más que interpretar el mundo; de lo que se trata es de transformarlo."', a:'Karl Marx'},
+  {t:'"El capital es trabajo muerto que sólo se reanima, a la manera del vampiro, chupando trabajo vivo."', a:'Karl Marx'},
+  {t:'"El secreto de una buena vejez no es otra cosa que un pacto honrado con la soledad."', a:'Gabriel García Márquez'},
+  {t:'"Nada se parece tanto a la locura como el talento."', a:'Julio Cortázar'},
+  {t:'"Somos lo que hacemos con lo que hicieron de nosotros."', a:'Jean-Paul Sartre'},
+  {t:'"Hay que endurecerse, pero sin perder la ternura jamás."', a:'Ernesto Che Guevara'},
+  {t:'"A solidão é boa quando você a escolhe."', a:'Lygia Fagundes Telles'},
+  {t:'"Primum non nocere."', a:'Tradición Médica'},
+  {t:'"La ciencia no tiene patria, aunque el científico la tenga."', a:'Louis Pasteur'},
+  {t:'"Hay hombres que luchan un día y son buenos. Hay quienes luchan toda la vida: esos son los imprescindibles."', a:'Bertolt Brecht'},
+];
+
+const dialogo = [
+  { max:'Sistema: Domingo. El único día que el calendario finge ser opcional.', dante:'El Kaizen no conoce el domingo. Solo conoce el delta entre quien eras ayer y quien serás mañana.' },
+  { max:'Protocolo Astra: Lunes. La semana comienza con intención o con excusas.', dante:'La diferencia entre ambas opciones es exactamente la diferencia entre Harvard y el arrepentimiento.' },
+  { max:'Estado: Martes. El día que nadie romantiza. Productividad media histórica: insuficiente.', dante:'El martes es el día más honesto de la semana. Sin la ilusión del lunes, sin la promesa del miércoles.' },
+  { max:'Análisis: Miércoles. Punto de inflexión de la semana. Variables en equilibrio inestable.', dante:'A mitad de semana se sabe qué tan ambicioso fue el plan del lunes. Rara vez la respuesta es satisfactoria.' },
+  { max:'Alerta: Jueves. SAT deadline se aproxima. TOEFL también. La aritmética no espera.', dante:'El jueves es el día en que los que empezaron el lunes ya llevan ventaja. Considerarlo.' },
+  { max:'Reporte: Viernes. Sistema detecta tendencia hacia la relajación prematura.', dante:'Que la semana esté terminando no significa que el trabajo lo esté. La diferencia importa.' },
+  { max:'Protocolo Astra: El laboratorio no descansa, pero el Dr. Guevara podría parpadear.', dante:'Parpadear es el único acto involuntario que la ambición aún no ha colonizado. Por ahora.' },
+];
+
+const toxicQuotes = [
+  { voice:'max', text:'¿Ya estudiaste para el SAT o te resignaste a estudiar en la Nacional?' },
+  { voice:'max', text:'Recordatorio: El SAT no se aprueba con buenas intenciones.' },
+  { voice:'max', text:'Productividad de hoy: 23%. Netflix sigue ganando.' },
+  { voice:'dante', text:'Otro día leyendo frases motivacionales en vez de estudiar.' },
+  { voice:'dante', text:'El talento sin disciplina es solo una anécdota que nadie va a contar.' },
+  { voice:'dante', text:'Cada hora que pierdes es una hora que alguien en Seúl, Tokio o Boston no pierde.' },
+];
+/* =========================================
+   MUSIC COMMENTS — Dante & Max
+   ========================================= */
+const MUSIC_COMMENTS = [
+  // El Cuarteto de Nos
+  { match: s => s.includes('Cuarteto De Nos') || s.includes('Cuarteto de Nos'),
+    dante: 'Robaldo, en todo su esplendor. La ironía rioplatense como anestesia quirúrgica.',
+    max: 'Artista más escuchado de tu biblioteca. Correlación con procrastinación: estadísticamente significativa.' },
+  // Soda Stereo / Cerati
+  { match: s => s.includes('Soda Stereo') || s.includes('Cerati') || s.includes('Gustavo Cerati'),
+    dante: 'Cerati. El hombre que demostró que el rock en español podía ser una forma de elegancia.',
+    max: 'Gustavo Cerati. Alta energía, alta valencia. Perfil neurológico compatible con evasión productiva.' },
+  // Lana Del Rey
+  { match: s => s.includes('Lana Del Rey'),
+    dante: 'Lana. Glamour fúnebre. El soundtrack de quien romantiza su propia ruina y la llama literatura.',
+    max: 'Baja danzabilidad, baja valencia. Entorno emocional no óptimo para el estudio de cálculo.' },
+  // Ado
+  { match: s => s.includes('Ado'),
+    dante: 'Ado. Una voz que no pide permiso. El J-pop cuando decide dejar de ser decorativo.',
+    max: 'Energía: 0.97. Si estudiaras con la misma intensidad con que escuchas esto, el SAT estaría resuelto.' },
+  // MASS OF THE FERMENTING DREGS
+  { match: s => s.includes('MASS OF THE FERMENTING DREGS'),
+    dante: 'Math rock y shoegaze. Una decisión que explica bastante sobre ti.',
+    max: 'Instrumentalness: 0.85. El cerebro agradece la ausencia de letras para ciertos tipos de trabajo profundo.' },
+  // Metallica
+  { match: s => s.includes('Metallica'),
+    dante: 'Metallica. La física del riff. Master of Puppets dura 8 minutos y 27 segundos de honestidad brutal.',
+    max: 'Thrash metal detectado. Recomiendo emparejarlo con álgebra lineal. Ambos requieren estructura y velocidad.' },
+  // Iron Maiden
+  { match: s => s.includes('Iron Maiden'),
+    dante: 'Iron Maiden. Eddie sigue aquí. La historia como metal: Bruce Dickinson y sus temas sobre guerras y muerte.',
+    max: 'Alta energía sostenida. Buena elección para sesiones largas de estudio. No para el meeting con Moreno.' },
+  // Kanye West
+  { match: s => s.includes('Kanye West'),
+    dante: 'Kanye. El genio que olvidó que la cordura también es una forma de obra.',
+    max: 'Alta danzabilidad, varianza emocional extrema. Álbum: variable. Productividad: impredecible.' },
+  // Arctic Monkeys
+  { match: s => s.includes('Arctic Monkeys'),
+    dante: 'Turner. El poeta de Sheffield que sabe exactamente cuánto le cuesta sonar despreocupado.',
+    max: 'Rock alternativo británico. Índice de introspección: alto. No recomendado antes de tomar decisiones importantes.' },
+  // Molotov
+  { match: s => s.includes('Molotov'),
+    dante: 'Molotov. Rock mexicano con la rabia justa. Políticamente incómodo, musicalmente irrefutable.',
+    max: 'Alta energía, alto speechiness. Letra más densa que el promedio. Atención: puede distraer del tracker.' },
+  // Willie Colón / Héctor Lavoe / Salsa
+  { match: s => s.includes('Willie Colón') || s.includes('Héctor Lavoe') || s.includes('Fania'),
+    dante: 'Colón. Lavoe. La salsa como crónica social. Fania Records fue más importante que muchos ministerios de cultura.',
+    max: 'Salsa clásica detectada. Danzabilidad alta. Tempo moderado. Compatible con descansos activos de 5 minutos.' },
+  // Café Tacvba
+  { match: s => s.includes('Café Tacvba') || s.includes('Cafe Tacvba'),
+    dante: 'Café Tacvba. El rock latinoamericano cuando decide ser honesto sobre lo que es.',
+    max: 'Rock mexicano, varianza estilística máxima por álbum. Sistema detecta coherencia: nula. Calidad: constante.' },
+  // Charly García
+  { match: s => s.includes('Charly García') || s.includes('Charly Garcia'),
+    dante: 'Charly García. Un hombre que le escribió canciones al fin del mundo antes de que fuera una estética.',
+    max: 'Argentine rock fundacional. Alto contenido lírico. Baja danzabilidad. Alta densidad histórica.' },
+  // Hamilton / Musicals
+  { match: s => s.includes('Hamilton') || s.includes('Original Broadway Cast'),
+    dante: 'Hamilton. La historia como rap. Burr perdió. Tú tienes la oportunidad de no perder.',
+    max: 'Musical detectado. Wordcount por minuto: récord. Útil para memorización. Inútil para concentración profunda.' },
+  // TWICE / K-pop
+  { match: s => s.includes('TWICE') || s.includes('k-pop') || s.includes('NMIXX') || s.includes('NewJeans'),
+    dante: 'K-pop. La ingeniería aplicada a la emoción. No es un juicio. Es una observación.',
+    max: 'Alta danzabilidad, alta energía. Efecto documentado en recuperación cognitiva entre sesiones de Pomodoro.' },
+  // NAPA
+  { match: s => s.includes('NAPA'),
+    dante: 'NAPA. Português do sul. La melancolía atlántica en formato moderno. Bien, Tom.',
+    max: 'Detectada: práctica pasiva de portugués. CELPE-Bras approved. Eficiencia lingüística: aceptable.' },
+  // Olivia Rodrigo
+  { match: s => s.includes('Olivia Rodrigo'),
+    dante: 'Rodrigo. La rabia adolescente con producción de adultos. Honesta, al menos.',
+    max: 'Pop alternativo, alta valencia emocional negativa en álbum debut. Sistema no emite juicio. Solo registra.' },
+  // Linkin Park
+  { match: s => s.includes('Linkin Park'),
+    dante: 'Linkin Park. Los años 2000 en formato catarsis. Chester Bennington sabía exactamente a qué sonar.',
+    max: 'Nu-metal detectado. Energía: 0.95. Nota: el SAT no tiene sección de angst. Redistribuir energía.' },
+  // frederic (japonés)
+  { match: s => s.includes('frederic') || s.includes('Frederic'),
+    dante: 'frederic. J-rock con actitud. El tipo de banda que no le explica nada a nadie.',
+    max: 'Japanese indie rock. Alta energía, estructura compleja. Compatible con sesiones de bioinformática.' },
+  // Harry Styles
+  { match: s => s.includes('Harry Styles'),
+    dante: 'Styles. Ex-One Direction que decidió ser David Bowie. El resultado es más interesante de lo esperado.',
+    max: 'Pop suave, alta acousticness en tracks recientes. Entorno sonoro no disruptivo. Aceptable.' },
+  // King Gnu
+  { match: s => s.includes('King Gnu'),
+    dante: 'King Gnu. J-pop que no tiene miedo de volverse extraño a mitad de canción. Admirable.',
+    max: 'J-pop alternativo. Cambios de tempo complejos. Energía: 0.97. El cerebro trabaja más de lo que cree.' },
+  // Vondré / Shoegaze
+  { match: s => s.includes('Vondré') || s.includes('Vondre'),
+    dante: 'Vondré. Darkwave bogotano. La ciudad finalmente produciendo algo a su altura sonora.',
+    max: 'Shoegaze colombiano. Instrumentalness alta. Distorsión controlada. Para trabajo nocturno: óptimo.' },
+  // Canserbero
+  { match: s => s.includes('Canserbero'),
+    dante: 'Canserbero. El rap latinoamericano cuando decide tomarse en serio. Cosa que no ocurre con frecuencia.',
+    max: 'Latin hip hop. Alto speechiness. Alta densidad lírica. Modo recomendado: escucha activa, no fondo.' },
+  // Fito Páez
+  { match: s => s.includes('Fito Paez') || s.includes('Fito Páez'),
+    dante: 'Fito. El rock rioplatense hecho piano y neurosis. "El Amor Después del Amor" sigue siendo un teorema.',
+    max: 'Argentine rock, baja energía promedio. Alta carga emocional. No recomendado para días de examen.' },
+  // Genérico — fallback
+  { match: () => true,
+    dante: 'Música. El único argumento que no necesita referencias bibliográficas.',
+    max: 'Track en reproducción. Sistema en modo observación. Continúa.' },
+];
+
+function getMusicComment(trackTitle, artistName) {
+  const s = `${trackTitle} ${artistName}`.toLowerCase();
+  const found = MUSIC_COMMENTS.find(c => c.match(s));
+  return found || MUSIC_COMMENTS[MUSIC_COMMENTS.length - 1];
+}
+
+function MusicComment({ track }) {
+  const comment = getMusicComment(track.title || '', track.artist || '');
+  return (
+    <div style={{marginTop:'0.5rem',fontSize:'0.52rem',lineHeight:'1.5'}}>
+      <div className="text-max mono" style={{marginBottom:'2px'}}>{comment.max}</div>
+      <div className="text-dante serif" style={{fontStyle:'italic'}}>{comment.dante}</div>
+    </div>
+  );
+}
+const SUBJECTS = {
+  curricular:['Física','Cálculo diferencial','Álgebra lineal','Trigonometría','Química','Biología','Probabilidad','Filosofía','Informática','C. Sociales','Portugués','Español','Economía'],
+  examenes:['SAT Math','SAT Reading','SAT Writing','TOEFL Reading','TOEFL Listening','TOEFL Speaking','TOEFL Writing','Saber 11 Matemáticas','Saber 11 Lectura Crítica','Saber 11 Ciencias','Saber 11 Sociales','Saber 11 Inglés'],
+};
+
+const horarioData = [
+  { hora:'7:00–7:50', lu:'Portugués', ma:'Portugués', mi:'Portugués', ju:'Química', vi:'Español' },
+  { hora:'7:50–8:40', lu:'Portugués', ma:'Portugués', mi:'Portugués', ju:'Expresión corporal', vi:'Español' },
+  { hora:'8:40–9:25', lu:'Plan crece', ma:'Español', mi:'Producción textual', ju:'Español', vi:'C. Sociales' },
+  { hora:'9:25–10:10', special:'descanso' },
+  { hora:'10:10–11:00', lu:'Física', ma:'Deportes', mi:'Informática', ju:'Biología', vi:'Álgebra lineal' },
+  { hora:'11:00–11:50', lu:'Física', ma:'Deportes', mi:'Informática', ju:'Español', vi:'Filosofía' },
+  { hora:'11:50–12:40', lu:'Cálculo', ma:'Química', mi:'Álgebra', ju:'Trigonometría', vi:'Química' },
+  { hora:'12:40–13:25', lu:'Cálculo', ma:'Química', mi:'Ética y valores', ju:'Probabilidad', vi:'Dir. y P. de vida' },
+  { hora:'13:25–14:10', special:'almuerzo' },
+  { hora:'14:10–15:05', lu:'Prod. textual', ma:'Lab. de arte', mi:'Física', ju:'Filosofía', vi:'Economía y política' },
+];
+
+const saludos = [
+  { saludo:'Salve', nombre:'Dr. Guevara', public:false },
+  { saludo:'Buenas noches', nombre:'Lord Guevara', public:false },
+  { saludo:'Bienvenido', nombre:'Capitán Guevara', public:false },
+  { saludo:'Qué tal', nombre:'Tom Tom Tom', public:true },
+  { saludo:'Bem-vindo', nombre:'Tomás', public:true },
+  { saludo:'E aí', nombre:'Tom Tom', public:true },
+  { saludo:'Welcome back', nombre:'Dr. Guevara', public:false },
+  { saludo:'Good evening', nombre:'Captain Guevara', public:false },
+  { saludo:'お帰りなさい', nombre:'トム君', public:true },
+];
+
+// Global public mode — read from localStorage, broadcast via custom event
+const PublicCtx = React.createContext(false);
+function usePublicMode() { return React.useContext(PublicCtx); }
+
+const shortcuts = [
+  { label:'Max', url:'https://gemini.google.com' },
+  { label:'Dante', url:'https://claude.ai' },
+  { label:'Phidias', url:'https://lcf.phidias.co' },
+  { label:'Tasks', url:'https://tasks.google.com' },
+  { label:'DeepL', url:'https://deepl.com' },
+  { label:'RAE', url:'https://dle.rae.es' },
+  { label:'Priberam', url:'https://www.priberam.pt/DLPO' },
+  { label:'New Yorker', url:'https://www.newyorker.com' },
+  { label:'Japan Times', url:'https://www.japantimes.co.jp' },
+  { label:'Khan', url:'https://www.khanacademy.org' },
+  { label:'CommonApp', url:'https://www.commonapp.org' },
+];
+
+const TARGETS = {
+  sat:'2026-08-22', primavera:'2026-03-20', noviembre:'2027-11-01',
+  verano:'2026-06-21', otono:'2026-09-23', invierno:'2026-12-21', diciembre:'2026-12-13',
+};
+
+const CONTEXTO_DEFAULTS = [
+  { id:'c1', label:'Meeting con Prof. Moreno (UPenn)', date:'2026-03-28', type:'academic' },
+  { id:'c2', label:'Izamiento — Onda Onda (Tchakabum)', date:'2026-04-10', type:'social' },
+  { id:'c3', label:'Common App — objetivo borrador ensayo', date:'2026-09-01', type:'deadline' },
+  { id:'c4', label:'SAT — fecha objetivo', date:'2026-08-22', type:'exam' },
+  { id:'c5', label:'CELPE-Bras B2 — examen', date:'2026-10-15', type:'exam' },
+  { id:'c6', label:'Common App — deadline final', date:'2027-01-01', type:'deadline' },
+];
+
+/* =========================================
+   STORAGE HELPERS
+   ========================================= */
+const ls = {
+  get: (k, def) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch { return def; } },
+  set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+const getTodayKey = () => new Date().toISOString().split('T')[0];
+const getWeekKeys = () => { const k=[]; const n=new Date(); for(let i=6;i>=0;i--) k.push(new Date(n-i*86400000).toISOString().split('T')[0]); return k; };
+const getMonthKeys = () => { const k=[]; const n=new Date(); for(let i=29;i>=0;i--) k.push(new Date(n-i*86400000).toISOString().split('T')[0]); return k; };
+
+/* =========================================
+   UI PRIMITIVES
+   ========================================= */
+function SectionLabel({children}) {
+  return <div className="section-label">{children}</div>;
+}
+function AstraBtn({children, onClick, active, style, className=''}) {
+  return <button onClick={onClick} className={`astra-btn${active?' active':''} ${className}`} style={style}>{children}</button>;
+}
+
+/* =========================================
+   HOOKS
+   ========================================= */
+function useClocks() {
+  const [c, setC] = useState({nyc:'--:--', tky:'--:--', bog:'--:--'});
+  useEffect(() => {
+    const u = () => {
+      const n = new Date(), o = {hour:'2-digit',minute:'2-digit',hour12:false};
+      setC({
+        nyc: n.toLocaleTimeString('en-US',{...o,timeZone:'America/New_York'}),
+        tky: n.toLocaleTimeString('en-US',{...o,timeZone:'Asia/Tokyo'}),
+        bog: n.toLocaleTimeString('es-CO',{...o,timeZone:'America/Bogota'}),
+      });
+    };
+    u(); const id=setInterval(u,1000); return ()=>clearInterval(id);
+  },[]);
+  return c;
+}
+
+function useDayProgress() {
+  const [p, setP] = useState(0);
+  useEffect(() => {
+    const u=()=>{const n=new Date();setP((n.getHours()*60+n.getMinutes())/1440*100);};
+    u(); const id=setInterval(u,30000); return ()=>clearInterval(id);
+  },[]);
+  return p;
+}
+
+function useGreeting(pub) {
+  const pick = (pub) => {
+    const h=new Date().getHours();
+    let pool = pub ? saludos.filter(s=>s.public) : saludos;
+    pool = (h>=18||h<5) ? pool : pool.filter(s=>!s.saludo.match(/noches|noite|evening/));
+    if(!pool.length) pool = saludos.filter(s=>s.public);
+    return pool[Math.floor(Math.random()*pool.length)];
+  };
+  const [g, setG] = useState(()=>pick(pub));
+  useEffect(()=>{const id=setInterval(()=>setG(pick(pub)),8000);return()=>clearInterval(id);},[pub]);
+  return g;
+}
+
+function usePomodoro() {
+  const [time, setTime] = useState(25*60);
+  const [isWork, setIsWork] = useState(true);
+  const [running, setRunning] = useState(false);
+  const [count, setCount] = useState(()=>parseInt(ls.get('pomodoroCount','0')));
+  const [weekly, setWeekly] = useState(0);
+  const [monthly, setMonthly] = useState(0);
+
+  const updateStats = useCallback(()=>{
+    const h = ls.get('pomodoroHistory',[]);
+    const n=new Date();
+    setWeekly(h.filter(d=>new Date(d)>=new Date(n-7*86400000)).length);
+    setMonthly(h.filter(d=>new Date(d)>=new Date(n-30*86400000)).length);
+  },[]);
+
+  useEffect(()=>{updateStats();},[]);
+
+  useEffect(()=>{
+    if(!running) return;
+    const id=setInterval(()=>{
+      setTime(p=>{
+        if(p<=1){
+          setRunning(false);
+          if(isWork){
+            const nc=count+1; setCount(nc); ls.set('pomodoroCount',String(nc));
+            const h=ls.get('pomodoroHistory',[]); h.push(new Date().toDateString()); ls.set('pomodoroHistory',h);
+            updateStats(); setIsWork(false); return 5*60;
+          } else { setIsWork(true); return 25*60; }
+        }
+        return p-1;
+      });
+    },1000);
+    return ()=>clearInterval(id);
+  },[running,isWork,count]);
+
+  const m=Math.floor(time/60), s=time%60;
+  return {
+    display:`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`,
+    count, weekly, monthly, isWork,
+    start:()=>setRunning(true),
+    pause:()=>setRunning(false),
+    reset:()=>{setRunning(false);setIsWork(true);setTime(25*60);},
+  };
+}
+
+function useCountdowns() {
+  const [cd, setCd] = useState({});
+  useEffect(()=>{
+    const u=()=>{
+      const n=new Date(); const r={};
+      Object.entries(TARGETS).forEach(([k,d])=>{r[k]=Math.max(0,Math.ceil((new Date(d)-n)/86400000));});
+      setCd(r);
+    };
+    u(); const id=setInterval(u,3600000); return()=>clearInterval(id);
+  },[]);
+  return cd;
+}
+
+function useGeoWeather() {
+  const [loc, setLoc] = useState('⌖ Mosquera, Cundinamarca');
+  const [weather, setWeather] = useState('');
+  useEffect(()=>{
+    if(!navigator.geolocation){return;}
+    navigator.geolocation.getCurrentPosition(async pos=>{
+      const {latitude:lat,longitude:lon}=pos.coords;
+      try{const r=await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=es`);const d=await r.json();setLoc(`⌖ ${d.locality||d.city||'Región desconocida'}`);}catch{}
+      try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code`);const d=await r.json();const t=Math.round(d.current.temperature_2m);const cs=['Despejado','Parcialmente nublado','Niebla','Llovizna','Lluvia','Nieve','Aguacero','Nieve fuerte','Tormenta','Variable'];setWeather(`${t}°C · ${cs[Math.min(9,d.current.weather_code)]}`);}catch{}
+    },()=>setLoc('⌖ Mosquera, Cundinamarca'));
+  },[]);
+  return {loc,weather};
+}
+
+/* =========================================
+   HEADER
+   ========================================= */
+function Header() {
+  const progress = useDayProgress();
+  const clocks = useClocks();
+  const pub = usePublicMode();
+  const greeting = useGreeting(pub);
+  const {loc, weather} = useGeoWeather();
+  const fecha = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+
+  return (
+    <>
+      <div className="day-bar" style={{width:`${progress}%`}} />
+      <header>
+        <div className="clock-group fade-blur" style={{animationDelay:'0.2s'}}>
+          {[['NYC',clocks.nyc],['TKY',clocks.tky],['BOG',clocks.bog]].map(([l,t])=>(
+            <div key={l} className="clock-item">
+              <span>{l}</span>
+              <span className="clock-time">{t}</span>
+            </div>
+          ))}
+        </div>
+        <div className="mono text-muted-dim uppercase fade-blur" style={{fontSize:'0.6rem',letterSpacing:'2px',animationDelay:'0.3s'}}>{fecha}</div>
+        <div className="mono text-muted-dim fade-blur" style={{fontSize:'0.55rem',letterSpacing:'2px',display:'flex',alignItems:'center',gap:'0.375rem',animationDelay:'0.4s'}}>
+          <span>{loc}</span>
+          {weather && <><span className="pulse-dot" style={{color:'rgba(85,85,85,0.3)'}}>·</span><span>{weather}</span></>}
+        </div>
+        <div style={{height:'4rem',display:'flex',alignItems:'center',justifyContent:'center',overflow:'hidden'}}>
+          <div className="greeting fade-reveal" style={{animationDelay:'0.5s'}}>
+            {greeting.saludo},{' '}
+            <span className="greeting-name">{greeting.nombre}.</span>
+          </div>
+        </div>
+      </header>
+    </>
+  );
+}
+
+/* =========================================
+   DIALOGUE
+   ========================================= */
+function Dialogue() {
+  const [maxText, setMaxText] = useState('');
+  const [danteText, setDanteText] = useState('');
+  const [curMax, setCurMax] = useState(true);
+  const [curDante, setCurDante] = useState(false);
+
+  useEffect(()=>{
+    const day=new Date().getDay();
+    const voz=dialogo[day]||dialogo[0];
+    let i=0;
+    const mi=setInterval(()=>{
+      i++; setMaxText(voz.max.slice(0,i));
+      if(i>=voz.max.length){
+        clearInterval(mi); setCurMax(false); setCurDante(true);
+        let j=0;
+        setTimeout(()=>{
+          const di=setInterval(()=>{
+            j++; setDanteText(voz.dante.slice(0,j));
+            if(j>=voz.dante.length){clearInterval(di);setCurDante(false);}
+          },26);
+        },400);
+      }
+    },20);
+    return ()=>clearInterval(mi);
+  },[]);
+
+  return (
+    <div className="dialogue fade-blur" style={{animationDelay:'0.8s'}}>
+      <div className="dia-max">{maxText}{curMax && <span className="cursor-blink">▍</span>}</div>
+      <div className="dia-dante">
+        {danteText && <span style={{opacity:0.3,marginRight:'0.25rem'}}>—</span>}
+        {danteText}{curDante && <span className="cursor-blink">▍</span>}
+      </div>
+    </div>
+  );
+}
+
+/* =========================================
+   LEFT COLUMN
+   ========================================= */
+function PomodoroZone() {
+  const pom = usePomodoro();
+  const comments = {
+    0:{max:'Aún no has empezado.',dante:'El primer pomodoro es el más difícil.'},
+    1:{max:'Primer pomodoro completado.',dante:'Uno es el número de los comienzos.'},
+    2:{max:'Dos pomodoros. Ritmo establecido.',dante:'La consistencia es la forma más silenciosa de rebelión.'},
+    3:{max:'Tres. Momentum building.',dante:'Tres es el número de la síntesis.'},
+    4:{max:'Cuatro pomodoros. Sesión productiva.',dante:'Cuatro direcciones.'},
+    5:{max:'Cinco. Recomiendo pausa larga.',dante:'Cinco es el número de la mano.'},
+  };
+  const c = comments[pom.count] || {max:'Continúa.',dante:'El progreso es acumulativo.'};
+  return (
+    <div>
+      <SectionLabel>Pomodoro</SectionLabel>
+      <div className="mono text-foreground" style={{fontSize:'2.2rem',letterSpacing:'1px',marginBottom:'0.5rem'}}>{pom.display}</div>
+      <div style={{display:'flex',gap:'0.25rem',marginBottom:'0.5rem',flexWrap:'wrap'}}>
+        <AstraBtn onClick={pom.start}>Start</AstraBtn>
+        <AstraBtn onClick={pom.pause}>Pause</AstraBtn>
+        <AstraBtn onClick={pom.reset}>Reset</AstraBtn>
+      </div>
+      <div className="mono text-muted-dim" style={{fontSize:'0.55rem'}}>Pomodoros: {pom.count}</div>
+      <div className="mono text-muted-dim" style={{fontSize:'0.55rem',marginTop:'2px'}}>Semanal: {pom.weekly} | Mensual: {pom.monthly}</div>
+      <div style={{marginTop:'0.5rem',fontSize:'0.55rem'}}>
+        <div className="text-max mono">{c.max}</div>
+        <div className="text-dante serif" style={{fontStyle:'italic'}}>{c.dante}</div>
+      </div>
+    </div>
+  );
+}
+
+function MetasZone() {
+  const metas = [
+    {name:'SAT',progress:40,target:'1520+'},
+    {name:'TOEFL',progress:60,target:'105+'},
+    {name:'Saber 11',progress:25,target:'380+'},
+  ];
+  return (
+    <div>
+      <SectionLabel>Metas Activas</SectionLabel>
+      {metas.map(m=>(
+        <div key={m.name} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'0.25rem 0',borderBottom:'1px solid var(--border-soft)'}}>
+          <div style={{flex:1,marginRight:'0.5rem'}}>
+            <div className="mono text-muted" style={{fontSize:'0.55rem',letterSpacing:'0.5px'}}>{m.name}</div>
+            <div className="meta-bar"><div className="meta-fill" style={{width:`${m.progress}%`}} /></div>
+          </div>
+          <div className="mono text-foreground" style={{fontSize:'0.7rem'}}>{m.target}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* =========================================
+   SPOTIFY PKCE OAuth
+   ========================================= */
+const SPOTIFY_CLIENT_ID = '5ca64f221b95488e96e94a52e2313451';
+const SPOTIFY_REDIRECT_URI = window.location.href.split('?')[0].split('#')[0];
+const SPOTIFY_SCOPES = 'user-read-currently-playing user-read-playback-state';
+
+async function pkceChallenge() {
+  const arr = new Uint8Array(32);
+  crypto.getRandomValues(arr);
+  const verifier = btoa(String.fromCharCode(...arr)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  const enc = new TextEncoder().encode(verifier);
+  const hash = await crypto.subtle.digest('SHA-256', enc);
+  const challenge = btoa(String.fromCharCode(...new Uint8Array(hash))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  return { verifier, challenge };
+}
+
+async function spotifyLogin() {
+  const { verifier, challenge } = await pkceChallenge();
+  sessionStorage.setItem('spotify_verifier', verifier);
+  const params = new URLSearchParams({
+    client_id: SPOTIFY_CLIENT_ID,
+    response_type: 'code',
+    redirect_uri: SPOTIFY_REDIRECT_URI,
+    scope: SPOTIFY_SCOPES,
+    code_challenge_method: 'S256',
+    code_challenge: challenge,
+  });
+  window.location.href = 'https://accounts.spotify.com/authorize?' + params.toString();
+}
+
+async function exchangeCode(code) {
+  const verifier = sessionStorage.getItem('spotify_verifier');
+  if (!verifier) return null;
+  const res = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: SPOTIFY_CLIENT_ID,
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: SPOTIFY_REDIRECT_URI,
+      code_verifier: verifier,
+    }),
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  const exp = Date.now() + data.expires_in * 1000;
+  ls.set('spotify_token', data.access_token);
+  ls.set('spotify_refresh', data.refresh_token);
+  ls.set('spotify_exp', exp);
+  sessionStorage.removeItem('spotify_verifier');
+  return data.access_token;
+}
+
+async function refreshToken() {
+  const rt = ls.get('spotify_refresh', null);
+  if (!rt) return null;
+  const res = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: SPOTIFY_CLIENT_ID,
+      grant_type: 'refresh_token',
+      refresh_token: rt,
+    }),
+  });
+  if (!res.ok) { ls.set('spotify_token',null); return null; }
+  const data = await res.json();
+  const exp = Date.now() + data.expires_in * 1000;
+  ls.set('spotify_token', data.access_token);
+  ls.set('spotify_exp', exp);
+  if (data.refresh_token) ls.set('spotify_refresh', data.refresh_token);
+  return data.access_token;
+}
+
+async function getValidToken() {
+  const exp = ls.get('spotify_exp', 0);
+  let token = ls.get('spotify_token', null);
+  if (!token) return null;
+  if (Date.now() > exp - 60000) token = await refreshToken();
+  return token;
+}
+
+async function fetchNowPlaying(token) {
+  const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
+    headers: { Authorization: 'Bearer ' + token },
+  });
+  if (res.status === 204 || res.status === 404) return { idle: true };
+  if (!res.ok) return null;
+  const data = await res.json();
+  if (!data || !data.item) return { idle: true };
+  return {
+    title: data.item.name,
+    artist: data.item.artists.map(a => a.name).join(', '),
+    album: data.item.album.name,
+    cover: data.item.album.images?.[2]?.url || data.item.album.images?.[0]?.url || null,
+    playing: data.is_playing,
+    progress: data.progress_ms,
+    duration: data.item.duration_ms,
+  };
+}
+
+function SpotifyZone() {
+  const [track, setTrack] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [authed, setAuthed] = useState(false);
+
+  // Handle OAuth callback
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    if (code) {
+      setLoading(true);
+      exchangeCode(code).then(token => {
+        window.history.replaceState({}, '', window.location.pathname);
+        if (token) setAuthed(true);
+        setLoading(false);
+      });
+    } else {
+      getValidToken().then(t => { if (t) setAuthed(true); });
+    }
+  }, []);
+
+  // Poll now playing
+  useEffect(() => {
+    if (!authed) return;
+    const poll = async () => {
+      const token = await getValidToken();
+      if (!token) { setAuthed(false); return; }
+      const t = await fetchNowPlaying(token);
+      setTrack(t);
+    };
+    poll();
+    const id = setInterval(poll, 5000);
+    return () => clearInterval(id);
+  }, [authed]);
+
+  const logout = () => {
+    ls.set('spotify_token', null);
+    ls.set('spotify_refresh', null);
+    ls.set('spotify_exp', 0);
+    setAuthed(false);
+    setTrack(null);
+  };
+
+  const pct = track && !track.idle && track.duration ? Math.round(track.progress / track.duration * 100) : 0;
+
+  return (
+    <div className="spotify-box">
+      <SectionLabel>Ahora suena</SectionLabel>
+      {loading && (
+        <div className="mono text-muted-dim" style={{fontSize:'0.55rem'}}>Conectando...</div>
+      )}
+      {!loading && !authed && (
+        <button onClick={spotifyLogin} style={{background:'none',border:'1px solid #1DB954',color:'#1DB954',fontFamily:'JetBrains Mono,monospace',fontSize:'0.55rem',padding:'0.25rem 0.75rem',cursor:'pointer',letterSpacing:'1px',transition:'all 0.2s',width:'100%'}}>
+          ▶ Conectar Spotify
+        </button>
+      )}
+      {!loading && authed && (
+        <>
+          {(!track || track.idle) ? (
+            <div style={{display:'flex',alignItems:'center',gap:'0.5rem'}}>
+              <div style={{width:'2.5rem',height:'2.5rem',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',color:'rgba(85,85,85,0.2)',fontSize:'0.9rem'}}>♪</div>
+              <div>
+                <div className="serif italic text-fg-secondary" style={{fontSize:'0.7rem'}}>Nada suena</div>
+                <div className="mono text-muted uppercase" style={{fontSize:'0.5rem',letterSpacing:'1px'}}>Spotify</div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div style={{display:'flex',alignItems:'center',gap:'0.5rem',marginBottom:'0.375rem'}}>
+                {track.cover
+                  ? <img src={track.cover} alt="cover" style={{width:'2.5rem',height:'2.5rem',objectFit:'cover',border:'1px solid var(--border)'}} />
+                  : <div style={{width:'2.5rem',height:'2.5rem',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',color:'rgba(85,85,85,0.2)'}}>♪</div>
+                }
+                <div style={{flex:1,minWidth:0}}>
+                  <div className="serif italic text-fg-secondary" style={{fontSize:'0.7rem',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{track.title}</div>
+                  <div className="mono text-muted" style={{fontSize:'0.5rem',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{track.artist}</div>
+                </div>
+                <span style={{fontSize:'0.6rem'}}>{track.playing ? '▶' : '⏸'}</span>
+              </div>
+              <div style={{height:'1px',background:'var(--border)',position:'relative',marginBottom:'0.5rem'}}>
+                <div style={{height:'1px',background:'#1DB954',position:'absolute',top:0,left:0,width:`${pct}%`,transition:'width 1s linear'}} />
+              </div>
+              <MusicComment track={track} />
+            </>
+          )}
+          <button onClick={logout} style={{background:'none',border:'none',cursor:'pointer',color:'var(--muted-dim)',fontFamily:'JetBrains Mono,monospace',fontSize:'0.4rem',marginTop:'0.375rem',letterSpacing:'1px',padding:0}}>desconectar</button>
+        </>
+      )}
+    </div>
+  );
+}
+
+function HorizonteZone() {
+  const cd = useCountdowns();
+  const items = [
+    {name:'SAT',key:'sat'},{name:'Primavera',key:'primavera'},{name:'Nov 2027',key:'noviembre'},
+    {name:'Verano',key:'verano'},{name:'Otoño',key:'otono'},{name:'Invierno',key:'invierno'},{name:'13 Dic',key:'diciembre'},
+  ];
+  return (
+    <div>
+      <SectionLabel>Horizonte</SectionLabel>
+      {items.map(i=>(
+        <div key={i.key} className="horizon-row">
+          <span className="mono text-muted-dim" style={{fontSize:'0.5rem'}}>{i.name}</span>
+          <span className="mono text-muted" style={{fontSize:'0.65rem'}}>{cd[i.key] != null ? cd[i.key]+'d' : '—'}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function LeftColumn() {
+  return (
+    <div className="left-col">
+      <div className="slide-up" style={{animationDelay:'0.1s'}}><PomodoroZone /></div>
+      <div className="slide-up" style={{animationDelay:'0.15s'}}><MetasZone /></div>
+      <div className="slide-up" style={{animationDelay:'0.2s'}}><SpotifyZone /></div>
+      <div className="slide-up" style={{animationDelay:'0.25s'}}><HorizonteZone /></div>
+    </div>
+  );
+}
+
+/* =========================================
+   CENTER COLUMN TABS
+   ========================================= */
+function ProductividadTab() {
+  const [idx, setIdx] = useState(()=>Math.floor(Math.random()*toxicQuotes.length));
+  const [opacity, setOpacity] = useState(1);
+  useEffect(()=>{
+    const id=setInterval(()=>{
+      setOpacity(0);
+      setTimeout(()=>{
+        setIdx(p=>{let n;do{n=Math.floor(Math.random()*toxicQuotes.length);}while(n===p);return n;});
+        setOpacity(1);
+      },500);
+    },25000);
+    return ()=>clearInterval(id);
+  },[]);
+  const q=toxicQuotes[idx];
+  return (
+    <div style={{fontSize:'0.6rem',fontStyle:'italic',lineHeight:'1.6',transition:'opacity 0.5s',opacity}}>
+      <span className="mono text-muted" style={{fontSize:'0.45rem',letterSpacing:'1px',marginRight:'0.25rem'}}>{q.voice==='max'?'Max':'Dante'}</span>
+      <span className={q.voice==='max'?'text-max':'text-dante'}>{q.text}</span>
+    </div>
+  );
+}
+
+function ContextoTab() {
+  const TYPE_LABELS = {academic:'Académico',deadline:'Deadline',exam:'Examen',personal:'Personal',social:'Social'};
+  const [events, setEvents] = useState(()=>{
+    const s=ls.get('contexto_events',null);
+    if(s) return s;
+    ls.set('contexto_events',CONTEXTO_DEFAULTS);
+    return CONTEXTO_DEFAULTS;
+  });
+  const [modal, setModal] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [form, setForm] = useState({label:'',date:getTodayKey(),type:'academic'});
+
+  const openAdd = () => { setEditId(null); setForm({label:'',date:getTodayKey(),type:'academic'}); setModal(true); };
+  const openEdit = ev => { setEditId(ev.id); setForm({label:ev.label,date:ev.date,type:ev.type}); setModal(true); };
+  const save = () => {
+    if(!form.label||!form.date) return;
+    let d=[...events];
+    if(editId) d=d.map(e=>e.id===editId?{...e,...form}:e);
+    else d.push({id:'c'+Date.now(),...form});
+    ls.set('contexto_events',d); setEvents(d); setModal(false);
+  };
+  const del = id => { const d=events.filter(e=>e.id!==id); ls.set('contexto_events',d); setEvents(d); };
+
+  const now=new Date(); now.setHours(0,0,0,0);
+  const sorted=[...events].sort((a,b)=>new Date(a.date)-new Date(b.date));
+
+  return (
+    <div style={{width:'100%'}}>
+      <div style={{display:'flex',alignItems:'center',marginBottom:'0.5rem'}}>
+        <SectionLabel>Próximos eventos</SectionLabel>
+        <AstraBtn onClick={openAdd} style={{marginLeft:'auto',fontSize:'0.45rem'}}>+ Añadir</AstraBtn>
+      </div>
+      {sorted.length===0 && <div className="mono text-muted-dim" style={{fontSize:'0.5rem'}}>Sin eventos</div>}
+      {sorted.map(ev=>{
+        const ed=new Date(ev.date); ed.setHours(0,0,0,0);
+        const diff=Math.round((ed-now)/86400000);
+        const isPast=diff<0;
+        let cls='text-muted', txt=`${diff}d`;
+        if(isPast){cls='text-muted-dim';txt=`+${Math.abs(diff)}d`;}
+        else if(diff<=3) cls='text-destructive';
+        else if(diff<=14) cls='text-fg-secondary';
+        if(diff===0) txt='HOY';
+        return (
+          <div key={ev.id} style={{display:'flex',alignItems:'center',gap:'0.5rem',padding:'0.375rem 0',borderBottom:'1px solid var(--border-soft)',position:'relative'}} className="horizon-row">
+            <span className={`mono ${cls}`} style={{fontSize:'0.6rem',fontWeight:'bold',minWidth:'2.5rem'}}>{txt}</span>
+            <div style={{flex:1}}>
+              <div className="mono text-muted-dim" style={{fontSize:'0.45rem'}}>{TYPE_LABELS[ev.type]} · {new Date(ev.date+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'short'})}</div>
+              <div className={`serif ${isPast?'text-muted-dim':'text-fg-secondary'}`} style={{fontSize:'0.6rem',fontStyle:'italic',textDecoration:isPast?'line-through':'none'}}>{ev.label}</div>
+            </div>
+            <div style={{display:'flex',gap:'0.25rem'}}>
+              <button onClick={()=>openEdit(ev)} style={{background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:'0.5rem'}}>✎</button>
+              <button onClick={()=>del(ev.id)} style={{background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:'0.5rem'}}>×</button>
+            </div>
+          </div>
+        );
+      })}
+      {modal && (
+        <div className="modal-overlay" onClick={()=>setModal(false)}>
+          <div className="modal-box" onClick={e=>e.stopPropagation()}>
+            <h3>{editId?'Editar Evento':'Añadir Evento'}</h3>
+            <input value={form.label} onChange={e=>setForm(f=>({...f,label:e.target.value}))} placeholder="Ej: Meeting con Prof. Moreno" className="astra-input" />
+            <input type="date" value={form.date} onChange={e=>setForm(f=>({...f,date:e.target.value}))} className="astra-input" />
+            <select value={form.type} onChange={e=>setForm(f=>({...f,type:e.target.value}))} className="astra-input">
+              {Object.entries(TYPE_LABELS).map(([v,l])=><option key={v} value={v}>{l}</option>)}
+            </select>
+            <div style={{display:'flex',gap:'0.5rem',justifyContent:'flex-end'}}>
+              <AstraBtn onClick={()=>setModal(false)}>Cancelar</AstraBtn>
+              <AstraBtn onClick={save} style={{borderColor:'var(--primary)'}}>Guardar</AstraBtn>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DiarioTab() {
+  const [key, setKey] = useState(getTodayKey());
+  const [text, setText] = useState('');
+  const [status, setStatus] = useState('sin cambios');
+  const timeout = useRef(null);
+
+  useEffect(()=>{ const d=ls.get('diario_data',{}); setText(d[key]||''); setStatus('sin cambios'); },[key]);
+
+  const handleChange = val => {
+    setText(val); setStatus('editando...');
+    if(timeout.current) clearTimeout(timeout.current);
+    timeout.current=setTimeout(()=>{
+      const d=ls.get('diario_data',{});
+      if(val.trim()) d[key]=val; else delete d[key];
+      ls.set('diario_data',d); setStatus('guardado');
+      setTimeout(()=>setStatus('sin cambios'),2500);
+    },800);
+  };
+
+  const nav = dir => {
+    const d=new Date(key+'T12:00:00'); d.setDate(d.getDate()+dir);
+    const nk=d.toISOString().split('T')[0];
+    if(nk>getTodayKey()) return;
+    setKey(nk);
+  };
+
+  const dateDisplay=new Date(key+'T12:00:00').toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const wc=text.trim()?text.trim().split(/\s+/).length:0;
+  const diaryData=ls.get('diario_data',{});
+  const dots=[];
+  for(let i=19;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const k=d.toISOString().split('T')[0];dots.push({key:k,day:d.getDate(),has:!!(diaryData[k]&&diaryData[k].trim()),isToday:k===getTodayKey(),isCurrent:k===key});}
+
+  return (
+    <div style={{width:'100%',maxWidth:'600px'}}>
+      <div style={{display:'flex',alignItems:'center',gap:'0.5rem',marginBottom:'0.75rem',justifyContent:'center',flexWrap:'wrap'}}>
+        <AstraBtn onClick={()=>nav(-1)}>←</AstraBtn>
+        <span className="mono text-fg-secondary" style={{fontSize:'0.6rem',letterSpacing:'1px'}}>{dateDisplay}</span>
+        <AstraBtn onClick={()=>nav(1)}>→</AstraBtn>
+        <AstraBtn onClick={()=>setKey(getTodayKey())}>HOY</AstraBtn>
+      </div>
+      <textarea value={text} onChange={e=>handleChange(e.target.value)} placeholder="¿Qué avanzaste? ¿Qué trabó? ¿Qué cambia mañana?" className="astra-input astra-textarea" style={{width:'100%'}} />
+      <div style={{display:'flex',justifyContent:'space-between',marginTop:'0.25rem'}}>
+        <span className="mono text-muted-dim" style={{fontSize:'0.5rem',color:status==='guardado'?'var(--primary)':'var(--muted-dim)'}}>{status}</span>
+        <span className="mono text-muted-dim" style={{fontSize:'0.5rem'}}>{wc} palabras</span>
+      </div>
+      <div style={{display:'flex',gap:'0.25rem',marginTop:'0.75rem',flexWrap:'wrap',justifyContent:'center'}}>
+        {dots.map(d=>(
+          <div key={d.key} onClick={()=>setKey(d.key)} className={`diary-dot${d.has?' filled':''}${d.isCurrent?' current':''}`}>{d.day}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StatsTab() {
+  const cd=useCountdowns();
+  const kpis=[{value:'1520+',label:'SAT'},{value:'105+',label:'TOEFL'},{value:'380+',label:'Saber 11'}];
+  const counters=[
+    {key:'primavera',label:'Primavera'},{key:'verano',label:'Verano'},
+    {key:'otono',label:'Otoño'},{key:'invierno',label:'Invierno'},
+    {key:'diciembre',label:'13 Dic'},{key:'noviembre',label:'Nov 2027'},
+  ];
+  return (
+    <div style={{width:'100%'}}>
+      <div style={{display:'flex',gap:'0.75rem',flexWrap:'wrap',justifyContent:'center',marginBottom:'0.75rem'}}>
+        {kpis.map(k=>(
+          <div key={k.label} className="kpi-block">
+            <span className="kpi-value">{k.value}</span>
+            <span className="kpi-label">{k.label}</span>
+          </div>
+        ))}
+      </div>
+      <div style={{display:'flex',gap:'0.75rem',flexWrap:'wrap',justifyContent:'center'}}>
+        {counters.map(c=>(
+          <div key={c.key} className="kpi-block">
+            <span className="kpi-value">{cd[c.key]!=null?cd[c.key]+'d':'—'}</span>
+            <span className="kpi-label">{c.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TrackerTab() {
+  const [data, setData] = useState(()=>ls.get('tracker_data',{}));
+  const [modal, setModal] = useState(false);
+  const [mcat, setMcat] = useState('curricular');
+  const [msubj, setMsubj] = useState(SUBJECTS.curricular[0]);
+  const [mhours, setMhours] = useState('');
+  const [mdate, setMdate] = useState(getTodayKey());
+  const week=getWeekKeys(); const month=getMonthKeys();
+  const getH=(s,keys)=>keys.reduce((t,k)=>t+(data[k]&&data[k][s]?data[k][s]:0),0);
+  const totalWeek=Object.values(SUBJECTS).flat().reduce((t,s)=>t+getH(s,week),0);
+  let streak=0;
+  for(let i=month.length-1;i>=0;i--){const k=month[i];if(data[k]&&Object.values(data[k]).some(v=>v>0))streak++;else if(streak>0)break;}
+  const openModal=cat=>{setMcat(cat);setMsubj(SUBJECTS[cat][0]);setMhours('');setMdate(getTodayKey());setModal(true);};
+  const saveLog=()=>{
+    const h=parseFloat(mhours);if(!msubj||isNaN(h)||h<=0)return;
+    const nd={...data};if(!nd[mdate])nd[mdate]={};nd[mdate][msubj]=(nd[mdate][msubj]||0)+h;
+    ls.set('tracker_data',nd);setData(nd);setModal(false);
+  };
+  return (
+    <div style={{width:'100%'}}>
+      <div style={{display:'flex',justifyContent:'space-between',marginBottom:'0.75rem'}}>
+        <div><div className="mono text-foreground" style={{fontSize:'1.2rem'}}>{totalWeek.toFixed(1)}h</div><div className="mono text-muted-dim" style={{fontSize:'0.45rem'}}>Semana</div></div>
+        <div><div className="mono text-foreground" style={{fontSize:'1.2rem'}}>{streak}</div><div className="mono text-muted-dim" style={{fontSize:'0.45rem'}}>Racha</div></div>
+      </div>
+      <SectionLabel>Racha (30 días)</SectionLabel>
+      <div className="dot-row" style={{marginTop:'0.25rem',marginBottom:'0.75rem'}}>
+        {month.map(k=>{
+          const has=data[k]&&Object.values(data[k]).some(v=>v>0);
+          const isT=k===getTodayKey();
+          return <div key={k} className={`dot ${isT?'dot-active':has?'dot-filled':'dot-empty'}`} />;
+        })}
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'0.5rem'}}>
+        {(['curricular','examenes']).map(cat=>(
+          <div key={cat} style={{border:'1px solid var(--border)',padding:'0.625rem'}}>
+            <div className="mono uppercase" style={{fontSize:'0.5rem',letterSpacing:'2px',marginBottom:'0.375rem'}}>{cat==='curricular'?'Curricular':'Exámenes'}</div>
+            {SUBJECTS[cat].map(s=>{const h=getH(s,week);if(h===0)return null;return(
+              <div key={s} style={{display:'flex',justifyContent:'space-between',padding:'2px 0'}}>
+                <span className="mono text-muted" style={{fontSize:'0.5rem'}}>{s}</span>
+                <span className="mono text-fg-secondary" style={{fontSize:'0.55rem'}}>{h.toFixed(1)}h</span>
+              </div>
+            );})}
+            <AstraBtn onClick={()=>openModal(cat)} style={{marginTop:'0.5rem',fontSize:'0.45rem'}}>+ Horas</AstraBtn>
+          </div>
+        ))}
+      </div>
+      {modal && (
+        <div className="modal-overlay" onClick={()=>setModal(false)}>
+          <div className="modal-box" onClick={e=>e.stopPropagation()}>
+            <h3>Registrar Horas</h3>
+            <select value={mcat} onChange={e=>{setMcat(e.target.value);setMsubj(SUBJECTS[e.target.value][0]);}} className="astra-input">
+              <option value="curricular">Curricular</option>
+              <option value="examenes">Exámenes</option>
+            </select>
+            <select value={msubj} onChange={e=>setMsubj(e.target.value)} className="astra-input">
+              {SUBJECTS[mcat].map(s=><option key={s} value={s}>{s}</option>)}
+            </select>
+            <input type="number" value={mhours} onChange={e=>setMhours(e.target.value)} placeholder="Horas" step="0.25" min="0.25" className="astra-input" />
+            <input type="date" value={mdate} onChange={e=>setMdate(e.target.value)} className="astra-input" />
+            <div style={{display:'flex',gap:'0.5rem',justifyContent:'flex-end'}}>
+              <AstraBtn onClick={()=>setModal(false)}>Cancelar</AstraBtn>
+              <AstraBtn onClick={saveLog} style={{borderColor:'var(--primary)'}}>Guardar</AstraBtn>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function HorarioTab() {
+  const dayNow=new Date().getDay();
+  const cols=['lu','ma','mi','ju','vi'];
+  return (
+    <div style={{width:'100%',overflowX:'auto'}}>
+      <table className="astra-table">
+        <thead>
+          <tr>
+            <th>Hora</th>
+            {['Día 1','Día 2','Día 3','Día 4','Día 5'].map((d,i)=><th key={d} className={i+1===dayNow?'today-col':''}>{d}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          {horarioData.map((row,ri)=>(
+            <tr key={ri}>
+              <td className="text-muted-dim">{row.hora}</td>
+              {row.special ? (
+                <td colSpan={5} style={{textAlign:'center',fontStyle:'italic',color:'var(--muted-dim)'}}>· {row.special} ·</td>
+              ) : (
+                cols.map((col,ci)=>(
+                  <td key={col} className={ci+1===dayNow?'today-col':'text-fg-secondary'}>{row[col]}</td>
+                ))
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function AcervoTab() {
+  const shuffled=[...acervo].sort(()=>Math.random()-0.5);
+  return (
+    <div style={{width:'100%',textAlign:'center'}}>
+      <div className="serif italic text-fg-secondary" style={{fontSize:'0.9rem',lineHeight:'1.6',marginBottom:'0.5rem'}}>{shuffled[0].t}</div>
+      <div className="mono text-muted-dim uppercase" style={{fontSize:'0.5rem',letterSpacing:'3px',marginBottom:'1.5rem'}}>{shuffled[0].a}</div>
+      <div style={{display:'flex',flexDirection:'column',gap:'0.75rem',textAlign:'left'}}>
+        {shuffled.map((q,i)=>(
+          <div key={i} className="acervo-item">
+            <div className="serif italic text-fg-secondary" style={{fontSize:'0.78rem'}}>{q.t}</div>
+            <div className="mono text-muted-dim uppercase" style={{fontSize:'0.52rem',letterSpacing:'3px',marginTop:'0.375rem'}}>{q.a}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function NotesTab() {
+  const [notes, setNotes] = useState(()=>ls.get('astra_notes',[]));
+  const [input, setInput] = useState('');
+  const save=()=>{
+    if(!input.trim()||input.length>200) return;
+    const nn=[{id:Date.now(),text:input.trim(),date:new Date().toISOString(),words:input.trim().split(/\s+/).length},...notes];
+    if(nn.length>20) nn.pop();
+    ls.set('astra_notes',nn); setNotes(nn); setInput('');
+  };
+  const del=id=>{const f=notes.filter(n=>n.id!==id);ls.set('astra_notes',f);setNotes(f);};
+  const edit=id=>{const n=notes.find(n=>n.id===id);if(n){setInput(n.text);del(id);}};
+  const wc=input.trim()?input.trim().split(/\s+/).length:0;
+  return (
+    <div style={{width:'100%'}}>
+      <SectionLabel>Bloc de Notas Rápido</SectionLabel>
+      <div style={{display:'flex',gap:'0.5rem',marginBottom:'0.5rem',alignItems:'flex-end'}}>
+        <textarea value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();save();}}} placeholder="Escribe una nota rápida... (máx 200 caracteres)" className="astra-input astra-textarea" style={{flex:1,height:'4rem'}} />
+        <AstraBtn onClick={save}>Guardar</AstraBtn>
+      </div>
+      <div style={{display:'flex',justifyContent:'space-between',marginBottom:'0.75rem'}}>
+        <span className="mono text-muted-dim" style={{fontSize:'0.45rem'}}>{wc} palabras</span>
+        <span className="mono text-muted-dim" style={{fontSize:'0.45rem'}}>{input.length}/200 caracteres</span>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(160px,1fr))',gap:'0.5rem'}}>
+        {notes.map(n=>(
+          <div key={n.id} onClick={()=>edit(n.id)} className="note-card">
+            <div className="serif text-fg-secondary" style={{fontSize:'0.65rem',marginBottom:'0.5rem',lineHeight:'1.5'}}>{n.text.substring(0,100)}{n.text.length>100?'...':''}</div>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <span className="mono text-muted-dim" style={{fontSize:'0.45rem'}}>{new Date(n.date).toLocaleDateString()}</span>
+              <button onClick={e=>{e.stopPropagation();del(n.id);}} style={{background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:'0.5rem'}}>✕</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TimeToolsTab() {
+  const [tool, setTool] = useState('stopwatch');
+  const [swTime, setSwTime] = useState(0);
+  const [swRun, setSwRun] = useState(false);
+  const [laps, setLaps] = useState([]);
+  const swRef=useRef(null);
+  useEffect(()=>{
+    if(swRun){swRef.current=setInterval(()=>setSwTime(t=>t+1),100);}
+    else if(swRef.current){clearInterval(swRef.current);}
+    return()=>{if(swRef.current)clearInterval(swRef.current);};
+  },[swRun]);
+  const swDisp=`${String(Math.floor(swTime/600)).padStart(2,'0')}:${String(Math.floor((swTime%600)/10)).padStart(2,'0')}.${swTime%10}`;
+
+  const [tMins, setTMins] = useState(5);
+  const [tTime, setTTime] = useState(300);
+  const [tRun, setTRun] = useState(false);
+  const tRef=useRef(null);
+  useEffect(()=>{
+    if(tRun){tRef.current=setInterval(()=>setTTime(t=>{if(t<=1){setTRun(false);return 0;}return t-1;}),1000);}
+    else if(tRef.current){clearInterval(tRef.current);}
+    return()=>{if(tRef.current)clearInterval(tRef.current);};
+  },[tRun]);
+  const tDisp=`${String(Math.floor(tTime/60)).padStart(2,'0')}:${String(tTime%60).padStart(2,'0')}`;
+
+  return (
+    <div style={{width:'100%'}}>
+      <SectionLabel>Herramientas de Tiempo</SectionLabel>
+      <div className="tabs-row" style={{marginBottom:'1rem'}}>
+        {[['stopwatch','Cronómetro'],['timer','Temporizador'],['alarm','Alarma']].map(([id,label])=>(
+          <AstraBtn key={id} active={tool===id} onClick={()=>setTool(id)}>{label}</AstraBtn>
+        ))}
+      </div>
+      {tool==='stopwatch' && (
+        <div style={{textAlign:'center'}}>
+          <div className="big-mono" style={{marginBottom:'0.75rem'}}>{swDisp}</div>
+          <div style={{display:'flex',gap:'0.25rem',justifyContent:'center',flexWrap:'wrap'}}>
+            <AstraBtn onClick={()=>setSwRun(true)}>Iniciar</AstraBtn>
+            <AstraBtn onClick={()=>setSwRun(false)}>Pausa</AstraBtn>
+            <AstraBtn onClick={()=>{setSwRun(false);setSwTime(0);setLaps([]);}}>Reiniciar</AstraBtn>
+            <AstraBtn onClick={()=>setLaps(l=>[...l,swDisp])}>Vuelta</AstraBtn>
+          </div>
+          {laps.length>0 && <div style={{marginTop:'0.75rem'}}>{laps.map((l,i)=><div key={i} className="mono text-muted" style={{fontSize:'0.5rem'}}>Vuelta {i+1}: {l}</div>)}</div>}
+        </div>
+      )}
+      {tool==='timer' && (
+        <div style={{textAlign:'center'}}>
+          <div className="big-mono" style={{marginBottom:'0.75rem'}}>{tDisp}</div>
+          <div style={{display:'flex',gap:'0.25rem',justifyContent:'center',alignItems:'center',flexWrap:'wrap'}}>
+            <input type="number" value={tMins} onChange={e=>setTMins(parseInt(e.target.value)||5)} min={1} max={60} className="astra-input" style={{width:'3.5rem',textAlign:'center'}} />
+            <span className="mono text-muted" style={{fontSize:'0.5rem'}}>min</span>
+            <AstraBtn onClick={()=>{setTTime(tMins*60);setTRun(true);}}>Iniciar</AstraBtn>
+            <AstraBtn onClick={()=>setTRun(false)}>Pausa</AstraBtn>
+            <AstraBtn onClick={()=>{setTRun(false);setTTime(tMins*60);}}>Reiniciar</AstraBtn>
+          </div>
+        </div>
+      )}
+      {tool==='alarm' && (
+        <div style={{textAlign:'center'}}>
+          <div className="big-mono" style={{marginBottom:'0.75rem'}}>--:-- --</div>
+          <div style={{display:'flex',gap:'0.25rem',justifyContent:'center',alignItems:'center'}}>
+            <input type="time" className="astra-input" style={{width:'8rem'}} />
+            <AstraBtn>Activar</AstraBtn>
+            <AstraBtn>Detener</AstraBtn>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* =========================================
+   CENTER COLUMN
+   ========================================= */
+const TABS = [
+  {id:'productividad',label:'Productividad'},
+  {id:'contexto',label:'Contexto'},
+  {id:'diario',label:'Diario'},
+  {id:'estadisticas',label:'Stats'},
+  {id:'tracker',label:'Tracker'},
+  {id:'horario',label:'Horario'},
+  {id:'acervo',label:'Acervo'},
+  {id:'notes',label:'📝 Notas'},
+  {id:'time-tools',label:'⏱️ Tiempo'},
+];
+
+function SearchHub() {
+  const ANNA_MIRRORS = [
+    'annas-archive.gl',
+    'annas-archive.pk',
+    'annas-archive.gd',
+    'annas-archive.org'
+  ];
+
+  const annaSearch = (e) => {
+    e.preventDefault();
+    const q = e.target.querySelector('input').value.trim();
+    if(!q) return;
+    const mirror = ANNA_MIRRORS[Math.floor(Math.random() * ANNA_MIRRORS.length)];
+    window.open('https://' + mirror + '/search?q=' + encodeURIComponent(q), '_blank');
+  };
+
+  return (
+    <div style={{width:'100%',maxWidth:'600px',margin:'0 auto'}}>
+      <SectionLabel>Búsquedas</SectionLabel>
+      <div style={{display:'flex',gap:'0.75rem',flexWrap:'wrap',justifyContent:'center'}}>
+        {[
+          {label:'Scholar',action:'https://scholar.google.com/scholar',placeholder:'Producir teoría...'},
+          {label:'Google',action:'https://www.google.com/search',placeholder:'Analizar realidad...'},
+        ].map(s=>(
+          <form key={s.label} action={s.action} method="get" target="_blank" className="search-form">
+            <span className="mono text-muted-dim uppercase" style={{fontSize:'0.45rem',letterSpacing:'1px'}}>{s.label}</span>
+            <input type="text" name="q" placeholder={s.placeholder} className="search-input" />
+          </form>
+        ))}
+        <form onSubmit={annaSearch} className="search-form">
+          <span className="mono uppercase" style={{fontSize:'0.45rem',letterSpacing:'1px',color:'var(--dante)'}}>Anna's</span>
+          <input type="text" placeholder="Saquear biblioteca..." className="search-input" style={{borderColor:'rgba(170,170,170,0.2)'}} />
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// Tabs hidden in public mode
+const PUBLIC_HIDDEN_TABS = new Set(['diario','productividad']);
+
+function CenterColumn() {
+  const pub = usePublicMode();
+  const [tab, setTab] = useState('estadisticas');
+  const visibleTabs = pub ? TABS.filter(t=>!PUBLIC_HIDDEN_TABS.has(t.id)) : TABS;
+
+  // If current tab got hidden, fall back
+  React.useEffect(()=>{
+    if(pub && PUBLIC_HIDDEN_TABS.has(tab)) setTab('estadisticas');
+  },[pub]);
+
+  const content = {
+    'productividad':<ProductividadTab key={tab} />,
+    'contexto':<ContextoTab key={tab} />,
+    'diario':<DiarioTab key={tab} />,
+    'estadisticas':<StatsTab key={tab} />,
+    'tracker':<TrackerTab key={tab} />,
+    'horario':<HorarioTab key={tab} />,
+    'acervo':<AcervoTab key={tab} />,
+    'notes':<NotesTab key={tab} />,
+    'time-tools':<TimeToolsTab key={tab} />,
+  };
+  return (
+    <div className="center-col">
+      {!pub && <Dialogue />}
+      <div className="tabs-row slide-up" style={{animationDelay:'0.3s'}}>
+        {visibleTabs.map(t=><AstraBtn key={t.id} active={tab===t.id} onClick={()=>setTab(t.id)} style={{fontSize:'0.5rem'}}>{t.label}</AstraBtn>)}
+      </div>
+      <div style={{width:'100%',display:'flex',flexDirection:'column',alignItems:'center'}} className="fade-in">
+        {content[tab]}
+      </div>
+      <div style={{display:'flex',gap:'0.5rem',flexWrap:'wrap',justifyContent:'center',maxWidth:'600px',marginTop:'0.5rem'}}>
+        {shortcuts.map(s=>(
+          <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer" className="shortcut-link">{s.label}</a>
+        ))}
+      </div>
+      <SearchHub />
+      <div className="hub-label">· ASTRA HUB ·</div>
+    </div>
+  );
+}
+
+/* =========================================
+   RIGHT COLUMN
+   ========================================= */
+function RightColumn() {
+  const [notes, setNotes] = useState(()=>ls.get('astra_notes',[]));
+  const quote=acervo[Math.floor(Math.random()*acervo.length)];
+  useEffect(()=>{
+    const h=()=>setNotes(ls.get('astra_notes',[]));
+    window.addEventListener('storage',h);
+    const id=setInterval(h,2000);
+    return()=>{window.removeEventListener('storage',h);clearInterval(id);};
+  },[]);
+
+  return (
+    <div className="right-col">
+      <div className="slide-up" style={{animationDelay:'0.1s'}}>
+        <SectionLabel>Google Calendar</SectionLabel>
+        <div style={{marginBottom:'0.25rem'}}>
+          <a href="https://calendar.google.com/calendar/r/settings" target="_blank" rel="noopener noreferrer" className="mono text-muted-dim" style={{fontSize:'0.45rem',textDecoration:'none',transition:'color 0.2s'}}>Configurar ↗</a>
+        </div>
+        <div className="cal-wrap">
+          <iframe src="https://calendar.google.com/calendar/embed?src=tom.guevarachacon13%40gmail.com&ctz=America%2FBogota" title="Google Calendar" />
+        </div>
+      </div>
+
+      <div className="slide-up" style={{animationDelay:'0.15s'}}>
+        <SectionLabel>Notas Recientes</SectionLabel>
+        <div style={{display:'flex',flexDirection:'column',gap:'0.375rem'}}>
+          {notes.slice(0,5).length>0 ? notes.slice(0,5).map(n=>(
+            <div key={n.id} style={{borderBottom:'1px solid var(--border-soft)',padding:'0.25rem 0'}}>
+              <div className="text-fg-secondary" style={{fontSize:'0.55rem'}}>{n.text.substring(0,30)}{n.text.length>30?'...':''}</div>
+              <div className="mono text-muted-dim" style={{fontSize:'0.45rem'}}>{new Date(n.date).toLocaleDateString()}</div>
+            </div>
+          )) : <div className="mono text-muted-dim" style={{fontSize:'0.5rem'}}>Sin notas</div>}
+        </div>
+      </div>
+
+      <div className="slide-up" style={{animationDelay:'0.2s'}}>
+        <SectionLabel>Acervo</SectionLabel>
+        <div className="serif italic text-fg-secondary" style={{fontSize:'0.7rem',lineHeight:'1.6'}}>{quote.t}</div>
+        <div className="mono text-muted-dim uppercase" style={{fontSize:'0.45rem',letterSpacing:'3px',marginTop:'0.25rem'}}>{quote.a}</div>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================
+   FOOTER
+   ========================================= */
+const PROTOCOLO_LINKS = [
+  { label: 'Protocolo de Emergencia ↗', url: 'https://www.who.int/emergencies/en/' },
+];
+
+function BackupNotice({ msg, onClose }) {
+  useEffect(()=>{ const id=setTimeout(onClose, 3000); return()=>clearTimeout(id); },[]);
+  return (
+    <div style={{position:'fixed',bottom:'3rem',right:'1rem',border:'1px solid var(--primary)',background:'var(--card)',padding:'0.5rem 1rem',fontFamily:'JetBrains Mono,monospace',fontSize:'0.55rem',color:'var(--foreground)',zIndex:100,animation:'fadeIn 0.3s ease both'}}>
+      {msg}
+    </div>
+  );
+}
+
+function Footer({ onPublicChange }) {
+  const [lastBackup, setLastBackup] = useState(()=>ls.get('last_backup',null));
+  const [notice, setNotice] = useState(null);
+  const [publicMode, setPublicMode] = useState(()=>ls.get('public_mode',false));
+  const [showProtocolo, setShowProtocolo] = useState(false);
+
+
+    const backup = async () => {
+    // Primero, el backup local (descarga de archivo)
+    try {
+      const snapshot = {};
+      const keys = ['astra_notes','diario_data','contexto_events','tracker_data','pomodoroCount','pomodoroHistory','gcal_url','public_mode'];
+      keys.forEach(k => { const v = localStorage.getItem(k); if(v) snapshot[k] = v; });
+      const json = JSON.stringify(snapshot, null, 2);
+      const blob = new Blob([json], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'astra-backup-' + new Date().toISOString().split('T')[0] + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      const now = new Date().toLocaleString('es-CO');
+      ls.set('last_backup', now);
+      setLastBackup(now);
+      setNotice('✓ Backup local descargado');
+    } catch(e) {
+      setNotice('✗ Error en backup local: ' + e.message);
+    }
+
+    // Luego, backup al servidor
+    const res = await createBackup('manual');
+    if (res.ok) {
+      setNotice(res.msg);
+    } else {
+      setNotice(res.msg);
+    }
+  };
+
+  const togglePublic = () => {
+    const next = !publicMode;
+    ls.set('public_mode', next);
+    setPublicMode(next);
+    if(onPublicChange) onPublicChange(next);
+    setNotice(next ? '⊙ Modo Público activado' : '⊙ Modo Público desactivado');
+  };
+  useEffect(() => {
+    checkAndRunAutoBackup();
+    const interval = setInterval(checkAndRunAutoBackup, 3600000); // cada hora
+    return () => clearInterval(interval);
+  }, []);
+  return (
+    <>
+      {notice && <BackupNotice msg={notice} onClose={()=>setNotice(null)} />}
+      <footer>
+        <div style={{display:'flex',gap:'0.5rem',flexWrap:'wrap',alignItems:'center'}}>
+          <AstraBtn onClick={togglePublic} active={publicMode} style={{fontSize:'0.4rem',letterSpacing:'1px'}}>
+            {publicMode ? '⊙ Público' : 'Modo Público'}
+          </AstraBtn>
+          <AstraBtn onClick={()=>{
+            ['https://tasks.google.com','https://gemini.google.com','https://claude.ai','https://lcf.phidias.co'].forEach(u=>window.open(u,'_blank'));
+          }} style={{fontSize:'0.4rem',letterSpacing:'1px',borderColor:'var(--primary)'}}>Protocolo</AstraBtn>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:'0.5rem'}}>
+          <span className='mono text-muted-dim' style={{fontSize:'0.45rem'}}>📦 Último backup: {lastBackup||'Nunca'}</span>
+          <AstraBtn onClick={backup} style={{fontSize:'0.45rem'}}>Backup ahora</AstraBtn>
+        </div>
+      </footer>
+    </>
+  );
+}
+
+/* =========================================
+   APP
+   ========================================= */
+function App() {
+  const [pub, setPub] = useState(()=>ls.get('public_mode',false));
+  return (
+    <PublicCtx.Provider value={pub}>
+      <div className="dashboard">
+        <Header />
+        <div className="main-grid">
+          <LeftColumn />
+          <CenterColumn />
+          <RightColumn />
+        </div>
+        <Footer onPublicChange={setPub} />
+      </div>
+    </PublicCtx.Provider>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
