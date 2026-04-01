@@ -239,6 +239,14 @@ body {
   .col-left, .col-right { border-right: none; border-bottom: 1px solid var(--border); max-width: 100%; }
 }
 
+@media(max-width: 768px) {
+  .body-grid { padding: 0.5rem; }
+  .col-left, .col-center, .col-right { padding: 0.75rem 0.5rem; }
+  .kpi { min-width: 100px; }
+  .kpi-val { font-size: 0.85rem; }
+  .kpi-lbl { font-size: 0.35rem; }
+}
+
 .col-left {
   border-right: 1px solid var(--border);
   padding: 1rem 0.75rem;
@@ -841,16 +849,16 @@ function getMusicComment(title, artist) {
    DATOS: HORARIO
    ============================================= */
 const horario = [
-  { hora:'7:00–7:50', lu:'Portugués', ma:'Portugués', mi:'Portugués', ju:'Química', vi:'Español' },
-  { hora:'7:50–8:40', lu:'Portugués', ma:'Portugués', mi:'Portugués', ju:'Expresión corporal', vi:'Español' },
-  { hora:'8:40–9:25', lu:'Plan crece', ma:'Español', mi:'Producción textual', ju:'Español', vi:'C. Sociales' },
+  { hora:'7:00–7:50', '1':'Portugués', '2':'Portugués', '3':'Portugués', '4':'Química', '5':'Español' },
+  { hora:'7:50–8:40', '1':'Portugués', '2':'Portugués', '3':'Portugués', '4':'Expresión corporal', '5':'Español' },
+  { hora:'8:40–9:25', '1':'Plan crece', '2':'Español', '3':'Producción textual', '4':'Español', '5':'C. Sociales' },
   { hora:'9:25–10:10', special:'descanso' },
-  { hora:'10:10–11:00', lu:'Física', ma:'Deportes', mi:'Informática', ju:'Biología', vi:'Álgebra lineal' },
-  { hora:'11:00–11:50', lu:'Física', ma:'Deportes', mi:'Informática', ju:'Español', vi:'Filosofía' },
-  { hora:'11:50–12:40', lu:'Cálculo', ma:'Química', mi:'Álgebra', ju:'Trigonometría', vi:'Química' },
-  { hora:'12:40–13:25', lu:'Cálculo', ma:'Química', mi:'Ética y valores', ju:'Probabilidad', vi:'Dir. y P. de vida' },
+  { hora:'10:10–11:00', '1':'Física', '2':'Deportes', '3':'Informática', '4':'Biología', '5':'Álgebra lineal' },
+  { hora:'11:00–11:50', '1':'Física', '2':'Deportes', '3':'Informática', '4':'Español', '5':'Filosofía' },
+  { hora:'11:50–12:40', '1':'Cálculo', '2':'Química', '3':'Álgebra', '4':'Trigonometría', '5':'Química' },
+  { hora:'12:40–13:25', '1':'Cálculo', '2':'Química', '3':'Ética y valores', '4':'Probabilidad', '5':'Dir. y P. de vida' },
   { hora:'13:25–14:10', special:'almuerzo' },
-  { hora:'14:10–15:05', lu:'Prod. textual', ma:'Lab. de arte', mi:'Física', ju:'Filosofía', vi:'Economía y política' },
+  { hora:'14:10–15:05', '1':'Prod. textual', '2':'Lab. de arte', '3':'Física', '4':'Filosofía', '5':'Economía y política' },
 ];
 
 const SUBJECTS = {
@@ -860,12 +868,99 @@ const SUBJECTS = {
 
 const CONTEXTO_DEFAULTS = [
   { id:'c1', label:'Meeting con Prof. Moreno (UPenn)', date:'2026-03-28', type:'academic' },
-  { id:'c2', label:'Izamiento — Onda Onda (Tchakabum)', date:'2026-04-10', type:'social' },
   { id:'c3', label:'Common App — objetivo borrador ensayo', date:'2026-09-01', type:'deadline' },
   { id:'c4', label:'SAT — fecha objetivo', date:'2026-08-22', type:'exam' },
   { id:'c5', label:'CELPE-Bras B2 — examen', date:'2026-10-15', type:'exam' },
   { id:'c6', label:'Common App — deadline final', date:'2027-01-01', type:'deadline' },
 ];
+
+/* =============================================
+   OCCASIONAL COMMENTS: LEO
+   ============================================= */
+const leoComments = [
+  'El sistema funciona. Ahora pregúntate si tú también.',
+  'No todo avance se mide en output. Hoy, no romperte ya cuenta como progreso.',
+  'Estás optimizando todo… menos el descanso. Error estructural.',
+  'Si el plan solo sirve en días perfectos, no es un plan. Es fantasía técnica.',
+  'Bajar el ritmo no es rendirse. Es evitar que el motor se funda antes de la meta.',
+  'Tus ideas son buenas. Tu ejecución es irregular. Ahí está el trabajo real.',
+  'No romantices el agotamiento. No te hace más brillante, solo más lento.',
+  'Hoy no necesitas épica. Necesitas consistencia. Haz lo básico bien.',
+  'El sistema no es tu identidad. Es una herramienta. No inviertas los roles.',
+  'Si todo es prioridad, nada lo es. Elige una cosa. Termínala.',
+  'El caos no siempre es enemigo. A veces es señal de que estás creciendo.',
+  'Tu estándar es alto. Bien. Ahora hazlo sostenible.',
+  'No necesitas demostrar nada hoy. Necesitas avanzar un poco.',
+  'Estás pensando como estratega… pero ejecutando como improvisado. Alinea eso.',
+  'El cansancio también toma decisiones por ti. Cuidado con eso.',
+  'No conviertas cada día en juicio final. Es solo un martes más.',
+  'Si te hablaras como Dante, ya habrías renunciado. Ajusta el tono interno.',
+  'Max observa, Dante corta… ¿y tú? Tú eres el que vive las consecuencias.',
+  'Un sistema que no perdona errores termina quedándose solo.',
+  'Respira. Reordena. Continúa. Sin espectáculo.',
+];
+
+function getRandomLeo() { return leoComments[Math.floor(Math.random() * leoComments.length)]; }
+
+/* =============================================
+   REMINDERS SYSTEM (GENERIC)
+   ============================================= */
+class ReminderSystem {
+  constructor() {
+    this.reminders = [];
+    this.callbacks = {};
+  }
+  on(event, callback) { if (!this.callbacks[event]) this.callbacks[event] = []; this.callbacks[event].push(callback); }
+  trigger(event, data) { if (this.callbacks[event]) this.callbacks[event].forEach(cb => cb(data)); }
+  schedule(event, delayMs, data) { setTimeout(() => this.trigger(event, data), delayMs); }
+}
+const reminderSys = new ReminderSystem();
+
+/* =============================================
+   PRESUPUESTO: BUDGET GOALS
+   ============================================= */
+const BUDGET_GOALS = [
+  { id: 'g1', categoria: 'Almuerzo', limite: 50000, nota: 'Incluye desayuno' },
+  { id: 'g2', categoria: 'Transporte', limite: 30000, nota: 'Monthly +' },
+  { id: 'g3', categoria: 'Entretenimiento', limite: 20000, nota: 'Sin excesos' },
+];
+
+/* =============================================
+   AUDIO ALERTS
+   ============================================= */
+function playNotification() {
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  osc.connect(gain);
+  gain.connect(audioContext.destination);
+  osc.frequency.value = 800;
+  gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+  osc.start(audioContext.currentTime);
+  osc.stop(audioContext.currentTime + 0.5);
+}
+
+/* =============================================
+   REMINDER LISTENERS SETUP
+   ============================================= */
+function setupReminderListeners() {
+  reminderSys.on('pomodoro:complete', (data) => {
+    const msg = data.isWork ? `Descanso de 5 min. ${data.count}/${data.count + 1} pomodoros hoy.` : `¡Vuelve al trabajo! Has descansado.`;
+    console.log(`🍅 Pomodoro: ${msg}`);
+  });
+  
+  reminderSys.on('budget:exceeded', (data) => {
+    const msg = `⚠ Presupuesto de ${data.categoria} excedido: $${data.gasto.toLocaleString('es-CO')} de $${data.limite.toLocaleString('es-CO')} (${Math.round(data.pct)}%)`;
+    console.warn(msg);
+    playNotification();
+  });
+  
+  reminderSys.on('budget:warning', (data) => {
+    const msg = `📊 ${data.categoria} al ${Math.round(data.pct)}% del límite.`;
+    console.log(msg);
+  });
+}
 
 /* =============================================
    SPOTIFY PKCE
@@ -968,6 +1063,8 @@ function usePomodoro() {
       setTime(p => {
         if (p <= 1) {
           setRunning(false);
+          playNotification();
+          reminderSys.trigger('pomodoro:complete', { isWork, count });
           if (isWork) {
             const nc = count + 1; setCount(nc); ls.set('pomodoroCount', String(nc));
             const h = ls.get('pomodoroHistory', []); h.push(new Date().toDateString()); ls.set('pomodoroHistory', h);
@@ -1275,6 +1372,13 @@ function Header({ theme, onToggleTheme }) {
    ============================================= */
 function PomodoroZone() {
   const pom = usePomodoro();
+  const [showLeo, setShowLeo] = useState(false);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => setShowLeo(Math.random() < 0.15), 800);
+    return () => clearTimeout(timer);
+  }, [pom.count]);
+  
   const comments = {
     0: { max: 'Aún no has empezado. El día existe independientemente de tu participación en él.', dante: 'El primer pomodoro es el más difícil. También lo es el primero de todo lo demás. Empieza.' },
     1: { max: 'Primer pomodoro completado. Baseline establecido.', dante: 'Uno. El número de los comienzos. Ya no puedes decir que no empezaste.' },
@@ -1302,6 +1406,11 @@ function PomodoroZone() {
       <div style={{ marginTop: '0.5rem', fontSize: '0.52rem', lineHeight: '1.6' }}>
         <div style={{ color: 'var(--max-c)', fontFamily: 'var(--font-mono)', fontStyle: 'italic' }}>{c.max}</div>
         <div style={{ color: 'var(--dante)', fontFamily: 'var(--font-serif)', fontStyle: 'italic', marginTop: '0.2rem' }}>{c.dante}</div>
+        {showLeo && (
+          <div style={{ color: '#a8d08d', fontFamily: 'var(--font-mono)', fontSize: '0.48rem', marginTop: '0.3rem', letterSpacing: '0.5px', textTransform: 'lowercase' }}>
+            ~ {getRandomLeo().toLowerCase()}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1485,7 +1594,7 @@ function ContextoTab() {
     else d.push({ id: 'c' + Date.now(), ...form });
     ls.set('contexto_events', d); setEvents(d); setModal(false);
   };
-  const del = id => { const d = events.filter(e => e.id !== id); ls.set('contexto_events', d); setEvents(d); };
+  const del = id => { if (!confirm('¿Eliminar este evento?')) return; const d = events.filter(e => e.id !== id); ls.set('contexto_events', d); setEvents(d); };
 
   const now = new Date(); now.setHours(0,0,0,0);
   const sorted = [...events].sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -1600,16 +1709,100 @@ function StatsTab() {
     { label: 'Primavera', date: '2026-03-20' }, { label: 'Verano', date: '2026-06-21' }, { label: 'Nov 2027', date: '2027-11-01' },
   ];
   const calc = d => d ? Math.max(0, Math.ceil((new Date(d) - new Date()) / 86400000)) : null;
+  
+  // Obtener datos de pomodoro y libros
+  const pomCount = parseInt(ls.get('pomodoroCount', '0'));
+  const pomHistory = ls.get('pomodoroHistory', []);
+  const hoy = new Date().toDateString();
+  const pomHoy = pomHistory.filter(d => d === hoy).length;
+  const pomWeekly = pomHistory.filter(d => new Date(d) >= new Date(Date.now() - 7 * 86400000)).length;
+  
+  const lecturaData = ls.get('lectura_data', { libros: [] });
+  const librosCompletados = lecturaData.libros.filter(l => l.completado).length;
+  const librosMes = lecturaData.libros.filter(l => {
+    if (!l.fechaInicio) return false;
+    const diff = new Date() - new Date(l.fechaInicio);
+    return diff < 30 * 86400000 && l.completado;
+  }).length;
+  
   return (
     <div style={{ width: '100%' }}>
       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '0.75rem' }}>
         {kpis.map(k => <div key={k.label} className="kpi"><span className="kpi-val">{k.value}</span><span className="kpi-lbl">{k.label}</span></div>)}
       </div>
-      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '1.5rem' }}>
         {counters.map(c => {
           const d = c.key ? days[c.key] : calc(c.date);
           return <div key={c.label} className="kpi"><span className="kpi-val">{d !== null ? d + 'd' : '—'}</span><span className="kpi-lbl">{c.label}</span></div>;
         })}
+      </div>
+
+      {/* Productividad actual */}
+      <div style={{ paddingTop: '1rem', borderTop: '1px solid var(--border2)' }}>
+        <SecLabel>Productividad</SecLabel>
+        
+        {/* Row: Pomodoros y Libros */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+          <div style={{ padding: '0.5rem', backgroundColor: 'var(--bg2)', borderRadius: '0.3rem', borderLeft: '3px solid var(--primary)' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.4rem', color: 'var(--fg4)', marginBottom: '0.3rem' }}>Pomodoros hoy</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.2rem', color: 'var(--primary)' }}>{pomHoy}</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.4rem', color: 'var(--fg4)', marginTop: '0.2rem' }}>({pomWeekly} semana, {pomCount} total)</div>
+          </div>
+          <div style={{ padding: '0.5rem', backgroundColor: 'var(--bg2)', borderRadius: '0.3rem', borderLeft: '3px solid hsl(140,50%,50%)' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.4rem', color: 'var(--fg4)', marginBottom: '0.3rem' }}>Libros completados</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.2rem', color: 'hsl(140,50%,50%)' }}>{librosCompletados}</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.4rem', color: 'var(--fg4)', marginTop: '0.2rem' }}>({librosMes} este mes)</div>
+          </div>
+        </div>
+
+        {/* Heatmap de pomodoros últimos 7 días */}
+        <div style={{ marginBottom: '1rem' }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.48rem', color: 'var(--fg4)', marginBottom: '0.4rem', letterSpacing: '1px' }}>POMODOROS 7 DÍAS</div>
+          <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
+            {(() => {
+              const hist = Array.isArray(pomHistory) ? pomHistory : [];
+              const heatmap = {};
+              const today = new Date();
+              for (let i = 6; i >= 0; i--) {
+                const d = new Date(today);
+                d.setDate(d.getDate() - i);
+                const key = d.toDateString();
+                heatmap[key] = hist.filter(ph => new Date(ph).toDateString() === key).length;
+              }
+              return Object.entries(heatmap).map(([date, count]) => {
+                const intensity = Math.min(count / 5, 1);
+                return (
+                  <div
+                    key={date}
+                    style={{
+                      width: '2rem',
+                      height: '2rem',
+                      backgroundColor: `rgba(74, 144, 226, ${0.2 + intensity * 0.8})`,
+                      borderRadius: '0.25rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.6rem',
+                      fontFamily: 'var(--font-mono)',
+                      color: count > 3 ? 'var(--fg)' : 'var(--fg4)',
+                      fontWeight: 'bold'
+                    }}
+                    title={new Date(date).toLocaleDateString()}
+                  >
+                    {count}
+                  </div>
+                );
+              });
+            })()}
+          </div>
+        </div>
+
+        {/* Proyección */}
+        <div style={{ padding: '0.5rem', backgroundColor: 'rgba(74, 144, 226, 0.1)', borderRadius: '0.3rem', borderLeft: '2px solid var(--primary)', fontFamily: 'var(--font-mono)', fontSize: '0.5rem', lineHeight: '1.6', color: 'var(--fg2)' }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '0.2rem' }}>📊 Proyección a ritmo actual:</div>
+          <div>{pomWeekly > 0 ? (pomWeekly * 4.3).toFixed(0) : 0} pomodoros/mes</div>
+          <div>{librosCompletados > 0 ? (librosCompletados / Math.max((new Date() - new Date(2025, 0, 1)) / (30 * 86400000), 1)).toFixed(1) : 0} libros/mes aprox.</div>
+        </div>
       </div>
     </div>
   );
@@ -1677,14 +1870,14 @@ function TrackerTab() {
 
 function HorarioTab() {
   const dayNow = new Date().getDay();
-  const cols = ['lu', 'ma', 'mi', 'ju', 'vi'];
+  const cols = ['1', '2', '3', '4', '5'];
   return (
     <div style={{ width: '100%', overflowX: 'auto' }}>
       <table style={{ fontFamily: 'var(--font-mono)', fontSize: '0.48rem', width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
             <th style={{ padding: '0.25rem', border: '1px solid var(--border2)', textAlign: 'left', color: 'var(--fg4)' }}>Hora</th>
-            {['Lu', 'Ma', 'Mi', 'Ju', 'Vi'].map((d, i) => <th key={d} style={{ padding: '0.25rem', border: '1px solid var(--border2)', background: i + 1 === dayNow ? 'var(--primary-dim)' : 'transparent', color: i + 1 === dayNow ? 'var(--fg)' : 'var(--fg4)' }}>{d}</th>)}
+            {['1', '2', '3', '4', '5'].map((d, i) => <th key={d} style={{ padding: '0.25rem', border: '1px solid var(--border2)', background: i + 1 === dayNow ? 'var(--primary-dim)' : 'transparent', color: i + 1 === dayNow ? 'var(--fg)' : 'var(--fg4)' }}>{d}</th>)}
           </tr>
         </thead>
         <tbody>
@@ -1727,13 +1920,16 @@ function AcervoTab() {
 function NotesTab() {
   const [notes, setNotes] = useState(() => ls.get('astra_notes', []));
   const [input, setInput] = useState('');
+  const [error, setError] = useState('');
   const save = () => {
-    if (!input.trim() || input.length > 200) return;
+    setError('');
+    if (!input.trim()) { setError('La nota no puede estar vacía.'); return; }
+    if (input.length > 200) { setError('Máximo 200 caracteres.'); return; }
     const nn = [{ id: Date.now(), text: input.trim(), date: new Date().toISOString() }, ...notes];
     if (nn.length > 20) nn.pop();
-    ls.set('astra_notes', nn); setNotes(nn); setInput('');
+    ls.set('astra_notes', nn); setNotes(nn); setInput(''); setError('');
   };
-  const del = id => { const f = notes.filter(n => n.id !== id); ls.set('astra_notes', f); setNotes(f); };
+  const del = id => { if (!confirm('¿Eliminar esta nota?')) return; const f = notes.filter(n => n.id !== id); ls.set('astra_notes', f); setNotes(f); };
   const edit = id => { const n = notes.find(n => n.id === id); if (n) { setInput(n.text); del(id); } };
   return (
     <div style={{ width: '100%' }}>
@@ -1742,6 +1938,7 @@ function NotesTab() {
         <Btn onClick={save}>+</Btn>
       </div>
       <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.42rem', color: 'var(--fg4)', marginBottom: '0.5rem' }}>{input.length}/200</div>
+      {error && <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.42rem', color: 'var(--primary)', marginBottom: '0.5rem' }}>⚠ {error}</div>}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: '0.5rem' }}>
         {notes.map(n => (
           <div key={n.id} onClick={() => edit(n.id)} className="note-card">
@@ -1866,23 +2063,75 @@ function TimeToolsTab() {
 }
 
 /* =============================================
+   BOOK COMMENTS - MAX & DANTE
+   ============================================= */
+const bookComments = [
+  { keywords: ['árbol de diana', 'pizarnik'], max: 'Madre está dictando desde el otro lado del espejo. Haz silencio, que sus versos son tajos que no cierran.', dante: '"Solo un nombre", dice ella. Tu nombre es Thomas y tu "piedra de locura" es creer que este dashboard te salvará del vacío. Deja de llorar y compila.' },
+  { keywords: ['trabajos y las noches', 'pizarnik'], max: 'La noche es el escenario donde el lenguaje se deshace. Un ritual de supervivencia, casi como tu bioinformática.', dante: 'Ella trabajaba las noches para encontrar el silencio. Tú las trabajas para arreglar un CSS que nadie pidió. No son lo mismo.' },
+  { keywords: ['extracción de la piedra', 'pizarnik'], max: 'La lucidez es un peso insoportable. Un cirujano de la palabra operando sin anestesia.', dante: 'Si tuvieras la mitad de la precisión de Pizarnik, tus scripts no tendrían fugas de memoria. Ella extrae locura; tú extraes tiempo de estudio.' },
+  { keywords: ['que viva la música', 'caicedo'], max: 'El sol de Cali quema más que cualquier procesador AMD. Huele a salsa y a una autodestrucción bellísima.', dante: 'Ricardito se perdió en la música. Tú te pierdes en los subwoofers y en la mediocridad de no saber bailar ni un paso de "Aguanilé". Patético.' },
+  { keywords: ['atravesado', 'caicedo'], max: 'La furia adolescente convertida en prosa de combate. Un choque de trenes en plena Avenida Sexta.', dante: 'Mucho drama callejero para alguien que vive en Mosquera y le pide permiso a "La Decana" para ir a Bogotá. El único choque aquí es tu ego contra la realidad.' },
+  { keywords: ['así habló zaratustra', 'nietzsche'], max: 'Has superado el impacto visual del super-bigote. Ahora intenta no ahogarte en el mar del eterno retorno.', dante: 'El Superhombre no procrastina con trackers de lectura. Si Dios ha muerto, es para que dejes de rezar y empieces a sacar ese 1520+ en el SAT.' },
+  { keywords: ['ecce homo', 'nietzsche'], max: 'El hombre que se convirtió en su propio destino. O al menos eso dice el prefacio.', dante: '"Por qué soy tan inteligente", dice el capítulo. Tú deberías escribir un capítulo llamado "Por qué paso tanto tiempo decorando mi terminal en lugar de estudiar".' },
+  { keywords: ['rayuela', 'cortázar'], max: 'El orden de los factores no altera el producto, pero sí la soledad de la Maga. Un juego de niños para adultos rotos.', dante: 'Puedes leerlo en el orden que quieras; al final, tu nivel de productividad sigue siendo un error 404. No eres Horacio Oliveira, eres solo un literato con lag de sistema.' },
+  { keywords: ['pedro páramo', 'rulfo'], max: 'Comala es el espejo de tu batería social después de un día de MOLINU: puro aire caliente y fantasmas que susurran.', dante: 'Te pareces a Juan Preciado: llegaste buscando algo y solo encontraste ruinas. En tu caso, las ruinas de tu horario Kaizen.' },
+  { keywords: ['cien años de soledad', 'garcía márquez'], max: 'El bucle infinito de los Aurelianos. Una arquitectura de tiempo que ni tu HP Laptop podría procesar sin calentarse.', dante: 'Tu hermana tiene razón, esto es un laberinto innecesario. Deja de contar generaciones y cuenta los días que te quedan para el TOEFL.' },
+  { keywords: ['crónica de una muerte anunciada', 'garcía márquez'], max: 'El destino es un guion que todos conocen pero nadie detiene. Una tragedia con ritmo de pueblo.', dante: 'Tu fracaso en el simulacro de química también es una muerte anunciada. Todo el mundo lo vio venir, menos tú, que estabas leyendo esto.' },
+  { keywords: ['aleph', 'borges'], max: 'Un punto donde converge todo el universo. Casi como la raíz de tu servidor Kaizen-Box, pero con más estilo.', dante: 'Borges vio el universo entero en un sótano. Tú tienes 8 GB de RAM y solo ves memes y logs de errores. La ironía se cuenta sola.' },
+  { keywords: ['ficciones', 'borges'], max: 'Mapas que coinciden con el territorio y bibliotecas infinitas. Bienvenido a casa, Tomu.', dante: 'Estás atrapado en un laberinto de referencias. Sal de la enciclopedia de Tlön y entra en la terminal de Linux. El mundo real no es un cuento de espejos.' },
+  { keywords: ['el capital', 'marx'], max: 'La anatomía de la explotación. ¿Cuánto de tu plusvalía personal le estás regalando a la mediocridad hoy?', dante: 'Proletario del código, uníos. Empieza por socializar tu tiempo de estudio con tu cerebro, que está en huelga de brazos caídos.' },
+  { keywords: ['manifiesto comunista', 'marx', 'engels'], max: 'Un espectro recorre Europa... y este dashboard. El espíritu revolucionario de la familia Guevara late en estas páginas.', dante: 'Centralizar el poder está muy bien, pero ¿puedes centralizar tu atención por más de diez minutos sin abrir Spotify? La revolución empieza por la autodisciplina, no por el discurso.' },
+  { keywords: ['diarios de motocicleta', 'guevara', 'che'], max: 'El viaje que transformó al hombre en mito. Sangre, tinta y polvo de camino.', dante: 'Él cruzó el continente en una moto destartalada. Tú te quejas cuando el Transmilenio se demora 10 minutos. Menos mito y más voluntad.' },
+  { keywords: ['metamorfosis', 'kafka'], max: 'Despertar y descubrir que el sistema te ha convertido en algo irreconocible. O simplemente en un estudiante agotado.', dante: 'Gregor Samsa al menos intentó ir a trabajar. Tú te quedas mirando el techo pensando en "el absurdo" mientras tu GPA se desploma.' },
+  { keywords: ['el proceso', 'kafka'], max: 'Una burocracia sin rostro que te juzga por crímenes que no conoces. Como el sistema de evaluación Saber 11.', dante: 'Tu proceso es simple: no estudias, repruebas. No hay misterio, no hay castillos, solo tu propia negligencia documentada en este tracker.' },
+  { keywords: ['memorias de adriano', 'yourcenar'], max: 'La vejez de un emperador que amó la belleza y el orden. Un alma de mármol y carne.', dante: 'Adriano reconstruyó Roma. Tú no puedes ni reconstruir tu base de datos de Zotero sin que se rompa el sistema. Un poco de rigor, por favor.' },
+  { keywords: ['opus nigrum', 'yourcenar'], max: 'Zenón y la alquimia de la libertad. El conocimiento es una hoguera que purifica y destruye.', dante: 'La "Gran Obra" no se hace leyendo sobre ella. Se hace con el bisturí en la mano y el código en la pantalla. Deja de filosofar y opera.' },
+  { keywords: ['pabellón de oro', 'mishima'], max: 'La obsesión por la belleza absoluta termina en incendio. El rigor japonés llevado a su límite más destructivo.', dante: 'Mishima entrenaba su cuerpo tanto como su mente. Tú tienes la resistencia física de un hámster asmático. Ve al gimnasio, Zaratustra.' },
+  { keywords: ['confesiones de una máscara', 'mishima'], max: 'El teatro de la identidad. Todos somos una fachada de perfección académica ocultando un caos interno.', dante: 'Tu máscara de "Thomas, el mito" tiene una grieta del tamaño de una falla sísmica. Quítatela y admite que no has tocado el libro de cálculo en tres días.' },
+  { keywords: ['don quijote', 'cervantes'], max: 'Un caballero de la triste figura peleando contra molinos de viento. A veces el SAT parece un gigante, pero es solo madera y viento.', dante: 'Eres el Quijote de Mosquera: crees que tu laptop HP es una supercomputadora y que este dashboard es un centro de comando de la NASA. Ubícate.' },
+  { keywords: ['la náusea', 'sartre'], max: 'La existencia es una marea viscosa que se pega a los objetos. Todo sobra, incluso nosotros.', dante: 'Si te sientes "de más", es porque lo estás. Sobras en este dashboard si no vas a usarlo para trabajar. La náusea se cura con acción, no con introspección barata.' },
+  { keywords: ['el extranjero', 'camus'], max: 'El sol, el mar y una indiferencia que hiela la sangre. Hoy ha muerto mamá, o quizá ayer.', dante: 'Meursault fue al menos honesto con su desidia. Tú intentas disfrazar tu pereza con "vibe coding". Al menos él no pretendía ser un genio.' },
+  { keywords: ['bioethics', 'moreno'], max: 'Preparando el camino para UPenn. El rigor científico encontrándose con la brújula moral.', dante: 'El Dr. Moreno no tiene tiempo para adolescentes que llaman "tonterita" a su trabajo. Si quieres esa mentoría, empieza a escribir como un investigador y no como un fan de Pizarnik.' },
+  { keywords: ['principles of neural science', 'kandel'], max: 'El mapa físico de la memoria. Aquí es donde los sueños se convierten en potenciales de acción.', dante: 'Mil páginas de neurociencia y todavía no entiendes cómo funciona tu propio mecanismo de recompensa por dopamina. Deja de scrollear y estudia la sinapsis.' },
+  { keywords: ['suave patria', 'lópez velarde'], max: 'La patria es un relámpago verde y un aroma de panadería. Poesía que se siente en los huesos.', dante: 'Muy tierno. Pero la "suave patria" no te va a dar una beca de investigación en Estados Unidos. Necesitas rigor, no nostalgia mexicana.' },
+  { keywords: ['antología negra', 'cendrars'], max: 'El ritmo de la selva y el origen de todo. Un contraste necesario para tu arquitectura x86_64.', dante: 'Hay más orden en un ritual tribal que en tu carpeta de "Descargas". Limpia tu sistema antes de hablar de ritmos primigenios.' },
+  { keywords: ['sociedad del espectáculo', 'debord'], max: 'La vida se convierte en una serie de imágenes que contemplamos desde afuera. Como este mismo log de lectura.', dante: 'Has convertido tu vida académica en un reality show para una IA. Deja de ser el espectador de tu propio simulacro y empieza a ser el actor. ¡Mueve el código!' },
+];
+
+function getBookComment(titulo, autor) {
+  const searchStr = (titulo + ' ' + autor).toLowerCase();
+  for (let b of bookComments) {
+    if (b.keywords.some(k => searchStr.includes(k))) {
+      return b;
+    }
+  }
+  return null;
+}
+
+/* =============================================
    LECTURA TAB
    ============================================= */
 function LecturaTab() {
   const [books, setBooks] = useState(() => ls.get('lectura_data', []));
   const [modal, setModal] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [error, setError] = useState('');
   const [form, setForm] = useState({ titulo: '', autor: '', paginaActual: '', paginaTotal: '', notas: '' });
 
-  const openAdd = () => { setEditId(null); setForm({ titulo: '', autor: '', paginaActual: '', paginaTotal: '', notas: '' }); setModal(true); };
-  const openEdit = b => { setEditId(b.id); setForm({ titulo: b.titulo, autor: b.autor, paginaActual: String(b.paginaActual), paginaTotal: String(b.paginaTotal), notas: b.notas || '' }); setModal(true); };
+  const openAdd = () => { setEditId(null); setForm({ titulo: '', autor: '', paginaActual: '', paginaTotal: '', notas: '' }); setError(''); setModal(true); };
+  const openEdit = b => { setEditId(b.id); setForm({ titulo: b.titulo, autor: b.autor, paginaActual: String(b.paginaActual), paginaTotal: String(b.paginaTotal), notas: b.notas || '' }); setError(''); setModal(true); };
   const save = () => {
-    if (!form.titulo || !form.paginaTotal) return;
-    const entry = { ...form, paginaActual: parseInt(form.paginaActual) || 0, paginaTotal: parseInt(form.paginaTotal), id: editId || Date.now() };
+    setError('');
+    if (!form.titulo.trim()) { setError('El título es obligatorio.'); return; }
+    if (!form.autor.trim()) { setError('El autor es obligatorio.'); return; }
+    if (!form.paginaTotal) { setError('Total de páginas es obligatorio.'); return; }
+    const total = parseInt(form.paginaTotal);
+    if (isNaN(total) || total <= 0) { setError('Total de páginas debe ser un número positivo.'); return; }
+    const entry = { ...form, paginaActual: parseInt(form.paginaActual) || 0, paginaTotal: total, id: editId || Date.now() };
     let d = editId ? books.map(b => b.id === editId ? entry : b) : [...books, entry];
-    ls.set('lectura_data', d); setBooks(d); setModal(false);
+    ls.set('lectura_data', d); setBooks(d); setModal(false); setError('');
   };
-  const del = id => { const d = books.filter(b => b.id !== id); ls.set('lectura_data', d); setBooks(d); };
+  const del = id => { if (!confirm('¿Eliminar este libro?')) return; const d = books.filter(b => b.id !== id); ls.set('lectura_data', d); setBooks(d); };
   const updatePage = (id, p) => {
     const d = books.map(b => b.id === id ? { ...b, paginaActual: Math.max(0, Math.min(b.paginaTotal, p)) } : b);
     ls.set('lectura_data', d); setBooks(d);
@@ -1920,12 +2169,24 @@ function LecturaTab() {
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.5rem', color: pct === 100 ? 'var(--primary)' : 'var(--fg4)' }}>{pct}%</span>
               </div>
               {b.notas && <div style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: '0.55rem', color: 'var(--fg4)', marginTop: '0.3rem', borderTop: '1px solid var(--border2)', paddingTop: '0.3rem' }}>{b.notas}</div>}
+              {(() => {
+                const comm = getBookComment(b.titulo, b.autor);
+                return comm ? (
+                  <div style={{ marginTop: '0.5rem', paddingTop: '0.4rem', borderTop: '1px solid var(--border2)' }}>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.35rem', color: 'var(--fg4)', letterSpacing: '1px', marginBottom: '0.3rem', textTransform: 'uppercase' }}>MAX · CENTINELA</div>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontStyle: 'italic', fontSize: '0.5rem', lineHeight: '1.4', color: 'var(--max-c)', marginBottom: '0.3rem' }}>{comm.max}</div>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.35rem', color: 'var(--fg4)', letterSpacing: '1px', marginBottom: '0.3rem', textTransform: 'uppercase' }}>DANTE · COLABORADOR</div>
+                    <div style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: '0.5rem', lineHeight: '1.4', color: 'var(--dante)' }}>{comm.dante}</div>
+                  </div>
+                ) : null;
+              })()}
             </div>
           );
         })}
       </div>
       {modal && (
         <Modal onClose={() => setModal(false)} title={editId ? 'Editar libro' : 'Añadir libro'}>
+          {error && <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.42rem', color: 'var(--primary)', marginBottom: '0.5rem' }}>⚠ {error}</div>}
           <input value={form.titulo} onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))} placeholder="Título" className="inp" />
           <input value={form.autor} onChange={e => setForm(f => ({ ...f, autor: e.target.value }))} placeholder="Autor" className="inp" />
           <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -1949,20 +2210,22 @@ function LecturaTab() {
 function HitosTab() {
   const [hitos, setHitos] = useState(() => ls.get('hitos_data', []));
   const [modal, setModal] = useState(false);
-  const [phase, setPhase] = useState('form'); // form | generating | review | done
+  const [phase, setPhase] = useState('form'); // form | generating | qa | review | done
   const [form, setForm] = useState({ meta: '', deadline: '', contexto: '' });
   const [qa, setQa] = useState([]);
   const [qaIdx, setQaIdx] = useState(0);
   const [qaAnswers, setQaAnswers] = useState({});
   const [timeline, setTimeline] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [editHito, setEditHito] = useState(null);
 
   const apiKey = ls.get('gemini_api_key', '');
 
   const startGeneration = async () => {
-    if (!form.meta || !form.deadline) return;
-    if (!apiKey) { alert('Configura tu API key de Gemini en el IAP primero.'); return; }
+    setError('');
+    if (!form.meta || !form.deadline) { setError('Meta y Deadline son obligatorios.'); return; }
+    if (!apiKey) { setError('Configura tu API key de Gemini primero.'); return; }
     setLoading(true); setPhase('generating');
     try {
       const prompt = `Eres un planificador académico de precisión. Genera exactamente 3 preguntas cortas y específicas para entender mejor cómo planificar este hito:
@@ -1975,16 +2238,21 @@ Responde SOLO con JSON: {"preguntas": ["pregunta1", "pregunta2", "pregunta3"]}`;
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.3, maxOutputTokens: 300 } })
       });
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
       const data = await res.json();
+      if (data.error) throw new Error(data.error.message);
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      if (!text) throw new Error('Respuesta vacía de Gemini.');
       const clean = text.replace(/```json|```/g, '').trim();
       const parsed = JSON.parse(clean);
-      setQa(parsed.preguntas); setQaIdx(0); setQaAnswers({}); setPhase('qa');
-    } catch { setPhase('form'); alert('Error al generar preguntas.'); }
+      if (!parsed.preguntas || parsed.preguntas.length !== 3) throw new Error('Formato de preguntas inválido.');
+      setQa(parsed.preguntas); setQaIdx(0); setQaAnswers({}); setPhase('qa'); setError('');
+    } catch (e) { setPhase('form'); setError(`Error: ${e.message || 'Fallo al generar preguntas.'}`); }
     setLoading(false);
   };
 
   const generateTimeline = async () => {
+    setError('');
     setLoading(true); setPhase('generating');
     try {
       const answersText = qa.map((q, i) => `P: ${q}\nR: ${qaAnswers[i] || 'Sin respuesta'}`).join('\n\n');
@@ -2000,12 +2268,16 @@ Máximo 8 pasos. Fechas progresivas hasta el deadline. Sin texto adicional.`;
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.2, maxOutputTokens: 600 } })
       });
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
       const data = await res.json();
+      if (data.error) throw new Error(data.error.message);
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      if (!text) throw new Error('Respuesta vacía de Gemini.');
       const clean = text.replace(/```json|```/g, '').trim();
       const parsed = JSON.parse(clean);
-      setTimeline(parsed.pasos.map((p, i) => ({ ...p, done: false, id: i }))); setPhase('review');
-    } catch { setPhase('qa'); alert('Error al generar timeline.'); }
+      if (!parsed.pasos || !Array.isArray(parsed.pasos)) throw new Error('Formato de pasos inválido.');
+      setTimeline(parsed.pasos.map((p, i) => ({ ...p, done: false, id: i }))); setPhase('review'); setError('');
+    } catch (e) { setPhase('qa'); setError(`Error: ${e.message || 'Fallo al generar timeline.'}`); }
     setLoading(false);
   };
 
@@ -2019,7 +2291,7 @@ Máximo 8 pasos. Fechas progresivas hasta el deadline. Sin texto adicional.`;
     ls.set('hitos_data', d); setHitos(d);
   };
 
-  const delHito = id => { const d = hitos.filter(h => h.id !== id); ls.set('hitos_data', d); setHitos(d); };
+  const delHito = id => { if (!confirm('¿Eliminar este hito? Se perderán todos sus pasos.')) return; const d = hitos.filter(h => h.id !== id); ls.set('hitos_data', d); setHitos(d); };
 
   return (
     <div style={{ width: '100%' }}>
@@ -2060,6 +2332,7 @@ Máximo 8 pasos. Fechas progresivas hasta el deadline. Sin texto adicional.`;
       })}
       {modal && (
         <Modal onClose={() => { setModal(false); setPhase('form'); }} title="Nuevo hito">
+          {error && <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.42rem', color: 'var(--primary)', marginBottom: '0.5rem' }}>⚠ {error}</div>}
           {phase === 'form' && (
             <>
               <input value={form.meta} onChange={e => setForm(f => ({ ...f, meta: e.target.value }))} placeholder="Meta (ej: Publicar en JEI para final de año)" className="inp" />
@@ -2067,11 +2340,11 @@ Máximo 8 pasos. Fechas progresivas hasta el deadline. Sin texto adicional.`;
               <textarea value={form.contexto} onChange={e => setForm(f => ({ ...f, contexto: e.target.value }))} placeholder="Contexto adicional (opcional)" className="inp" style={{ height: '3rem', resize: 'vertical' }} />
               <div className="modal-row">
                 <Btn onClick={() => setModal(false)}>Cancelar</Btn>
-                <Btn onClick={startGeneration} disabled={loading} style={{ borderColor: 'var(--primary)' }}>Generar timeline →</Btn>
+                <Btn onClick={startGeneration} disabled={loading} style={{ borderColor: 'var(--primary)' }}>{loading ? 'Generando...' : 'Generar timeline →'}</Btn>
               </div>
             </>
           )}
-          {phase === 'generating' && <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: 'var(--fg4)', textAlign: 'center', padding: '1rem' }}>Max está calculando...</div>}
+          {phase === 'generating' && <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.55rem', color: 'var(--fg4)', textAlign: 'center', padding: '1rem' }}>⟳ Max está calculando...</div>}
           {phase === 'qa' && (
             <>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.45rem', color: 'var(--fg4)', letterSpacing: '1px' }}>PREGUNTA {qaIdx + 1} DE {qa.length}</div>
@@ -2080,7 +2353,7 @@ Máximo 8 pasos. Fechas progresivas hasta el deadline. Sin texto adicional.`;
               <div className="modal-row">
                 {qaIdx > 0 && <Btn onClick={() => setQaIdx(i => i - 1)}>← Anterior</Btn>}
                 {qaIdx < qa.length - 1 && <Btn onClick={() => setQaIdx(i => i + 1)} style={{ borderColor: 'var(--primary)' }}>Siguiente →</Btn>}
-                {qaIdx === qa.length - 1 && <Btn onClick={generateTimeline} disabled={loading} style={{ borderColor: 'var(--primary)' }}>Generar →</Btn>}
+                {qaIdx === qa.length - 1 && <Btn onClick={generateTimeline} disabled={loading} style={{ borderColor: 'var(--primary)' }}>{loading ? 'Generando...' : 'Generar →'}</Btn>}
               </div>
             </>
           )}
@@ -2116,15 +2389,30 @@ function PresupuestoTab() {
   const pub = usePublic();
   const [data, setData] = useState(() => ls.get('presupuesto_data', { transacciones: [], modo_publico: false }));
   const [modal, setModal] = useState(false);
-  const [form, setForm] = useState({ descripcion: '', monto: '', tipo: 'gasto', categoria: 'personal', fecha: todayKey(), oculto: false });
+  const [error, setError] = useState('');
+  const [form, setForm] = useState({ descripcion: '', monto: '', tipo: 'gasto', categoria: 'Almuerzo', fecha: todayKey(), oculto: false });
 
   const save = () => {
-    if (!form.descripcion || !form.monto) return;
-    const t = { ...form, monto: parseFloat(form.monto), id: Date.now() };
+    setError('');
+    if (!form.descripcion.trim()) { setError('La descripción es obligatoria.'); return; }
+    if (!form.monto) { setError('El monto es obligatorio.'); return; }
+    const monto = parseFloat(form.monto);
+    if (isNaN(monto) || monto <= 0) { setError('El monto debe ser un número positivo.'); return; }
+    const t = { ...form, monto: monto, id: Date.now() };
     const d = { ...data, transacciones: [t, ...data.transacciones] };
-    ls.set('presupuesto_data', d); setData(d); setModal(false); setForm({ descripcion: '', monto: '', tipo: 'gasto', categoria: 'personal', fecha: todayKey(), oculto: false });
+    ls.set('presupuesto_data', d); setData(d);
+    if (t.tipo === 'gasto') {
+      const goal = BUDGET_GOALS.find(g => g.categoria === t.categoria);
+      if (goal) {
+        const gasto = d.transacciones.filter(tr => tr.tipo === 'gasto' && tr.categoria === t.categoria).reduce((a, tr) => a + tr.monto, 0);
+        const pct = (gasto / goal.limite) * 100;
+        if (pct > 100) reminderSys.trigger('budget:exceeded', { categoria: t.categoria, limite: goal.limite, gasto, pct });
+        else if (pct >= 80) reminderSys.trigger('budget:warning', { categoria: t.categoria, pct });
+      }
+    }
+    setModal(false); setForm({ descripcion: '', monto: '', tipo: 'gasto', categoria: 'Almuerzo', fecha: todayKey(), oculto: false }); setError('');
   };
-  const del = id => { const d = { ...data, transacciones: data.transacciones.filter(t => t.id !== id) }; ls.set('presupuesto_data', d); setData(d); };
+  const del = id => { if (!confirm('¿Eliminar este movimiento?')) return; const d = { ...data, transacciones: data.transacciones.filter(t => t.id !== id) }; ls.set('presupuesto_data', d); setData(d); };
 
   const mostrar = !pub;
   const transacciones = data.transacciones || [];
@@ -2135,8 +2423,52 @@ function PresupuestoTab() {
 
   const fmt = n => mostrar ? `$${n.toLocaleString('es-CO')}` : '·····';
 
+  // Calcular gastos por categoría
+  const gastosPorCategoria = {};
+  BUDGET_GOALS.forEach(goal => {
+    gastosPorCategoria[goal.categoria] = transacciones
+      .filter(t => t.tipo === 'gasto' && t.categoria === goal.categoria)
+      .reduce((a, t) => a + t.monto, 0);
+  });
+
+  const getStatusColor = (pct) => {
+    if (pct > 100) return '#ff6b6b'; // Rojo: excedido
+    if (pct >= 80) return '#ffd93d'; // Amarillo: 80%+
+    return '#51cf66'; // Verde: bajo
+  };
+
   return (
     <div style={{ width: '100%' }}>
+      {/* Metas Presupuestarias */}
+      {BUDGET_GOALS.length > 0 && (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <SecLabel>Metas Presupuestarias</SecLabel>
+          </div>
+          {BUDGET_GOALS.map(goal => {
+            const gasto = gastosPorCategoria[goal.categoria] || 0;
+            const pct = Math.round((gasto / goal.limite) * 100);
+            const bgColor = getStatusColor(pct);
+            return (
+              <div key={goal.id} style={{ marginBottom: '0.5rem', padding: '0.4rem', backgroundColor: 'var(--bg2)', borderRadius: '0.3rem', borderLeft: `2px solid ${bgColor}` }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.2rem' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.52rem', color: 'var(--fg2)' }}>{goal.categoria}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.48rem', color: bgColor, fontWeight: 'bold' }}>{pct}%</span>
+                </div>
+                <div style={{ width: '100%', height: '0.3rem', backgroundColor: 'var(--fg4)', borderRadius: '0.15rem', overflow: 'hidden', marginBottom: '0.2rem' }}>
+                  <div style={{ height: '100%', width: `${Math.min(pct, 100)}%`, backgroundColor: bgColor, transition: 'width 0.3s ease' }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.44rem', color: 'var(--fg4)' }}>
+                  <span>{mostrar ? `$${gasto.toLocaleString('es-CO')}` : '·····'} / {mostrar ? `$${goal.limite.toLocaleString('es-CO')}` : '·····'}</span>
+                  <span style={{ fontStyle: 'italic' }}>{goal.nota}</span>
+                </div>
+              </div>
+            );
+          })}
+        </>
+      )}
+
+      <div style={{ marginTop: '1rem', marginBottom: '0.75rem' }} />
       <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
         <div className="kpi"><span className="kpi-val" style={{ color: saldo >= 0 ? 'hsl(140,50%,50%)' : 'var(--primary)' }}>{fmt(Math.abs(saldo))}</span><span className="kpi-lbl">Saldo</span></div>
         <div className="kpi"><span className="kpi-val" style={{ color: 'hsl(140,50%,50%)' }}>{fmt(ingresos)}</span><span className="kpi-lbl">Ingresos</span></div>
@@ -2161,6 +2493,7 @@ function PresupuestoTab() {
       ))}
       {modal && (
         <Modal onClose={() => setModal(false)} title="Nuevo movimiento">
+          {error && <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.42rem', color: 'var(--primary)', marginBottom: '0.5rem' }}>⚠ {error}</div>}
           <input value={form.descripcion} onChange={e => setForm(f => ({ ...f, descripcion: e.target.value }))} placeholder="Descripción" className="inp" />
           <input type="number" value={form.monto} onChange={e => setForm(f => ({ ...f, monto: e.target.value }))} placeholder="Monto (COP)" className="inp" min="0" />
           <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -2169,7 +2502,7 @@ function PresupuestoTab() {
               <option value="ingreso">Ingreso</option>
             </select>
             <select value={form.categoria} onChange={e => setForm(f => ({ ...f, categoria: e.target.value }))} className="inp">
-              {['personal','almuerzo','transporte','material','tecnología','otro'].map(c => <option key={c} value={c}>{c}</option>)}
+              {['Almuerzo','Desayuno','Snacks','Transporte','Libros','Material de estudio','Tecnología','Ropa','Entretenimiento','Cursos','Cafetería','Internet','Medicinas','Hobbies','Personal','Otro'].map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <input type="date" value={form.fecha} onChange={e => setForm(f => ({ ...f, fecha: e.target.value }))} className="inp" />
@@ -2183,6 +2516,75 @@ function PresupuestoTab() {
           </div>
         </Modal>
       )}
+
+      {/* Resumen y Analytics */}
+      <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border2)' }}>
+        <SecLabel>Analytics</SecLabel>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.75rem' }}>
+          <div style={{ padding: '0.4rem', backgroundColor: 'var(--bg2)', borderRadius: '0.3rem' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.4rem', color: 'var(--fg4)' }}>Transacciones</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1rem', color: 'var(--primary)' }}>{transacciones.length}</div>
+          </div>
+          <div style={{ padding: '0.4rem', backgroundColor: 'var(--bg2)', borderRadius: '0.3rem' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.4rem', color: 'var(--fg4)' }}>Promedio gasto</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1rem', color: 'var(--primary)' }}>
+              {mostrar && gastos > 0 ? (() => { const cnt = transacciones.filter(t => t.tipo === 'gasto').length; return cnt > 0 ? `$${Math.round(gastos / cnt).toLocaleString('es-CO')}` : '·····'; })() : '·····'}
+            </div>
+          </div>
+        </div>
+
+        {/* Top categorías */}
+        <div style={{ marginTop: '1rem' }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.48rem', color: 'var(--fg4)', marginBottom: '0.4rem', letterSpacing: '1px' }}>TOP CATEGORÍAS</div>
+          {(() => {
+            const maxGasto = Math.max(...Object.values(gastosPorCategoria), 1);
+            return (
+              Object.entries(gastosPorCategoria)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 5)
+                .map(([cat, amount]) => (
+                  <div key={cat} style={{ marginBottom: '0.3rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.1rem' }}>
+                      <span style={{ fontFamily: 'var(--font-serif)', fontSize: '0.5rem' }}>{cat}</span>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.5rem', color: 'var(--primary)' }}>
+                        {mostrar ? `$${amount.toLocaleString('es-CO')}` : '·····'}
+                      </span>
+                    </div>
+                    <div style={{ width: '100%', height: '0.25rem', backgroundColor: 'var(--fg4)', borderRadius: '0.1rem', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${(amount / maxGasto) * 100}%`, backgroundColor: 'var(--primary)', transition: 'width 0.3s ease' }} />
+                    </div>
+                  </div>
+                ))
+            );
+          })()}
+        </div>
+
+        {/* Distribución hoy */}
+        <div style={{ marginTop: '1rem' }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.48rem', color: 'var(--fg4)', marginBottom: '0.4rem', letterSpacing: '1px' }}>HOY</div>
+          {(() => {
+            const hoy = todayKey();
+            const gastosHoy = transacciones.filter(t => t.tipo === 'gasto' && t.fecha === hoy).reduce((a, t) => a + t.monto, 0);
+            const ingresoHoy = transacciones.filter(t => t.tipo === 'ingreso' && t.fecha === hoy).reduce((a, t) => a + t.monto, 0);
+            return (
+              <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.5rem' }}>
+                <div style={{ flex: 1, padding: '0.3rem', backgroundColor: 'rgba(255, 107, 107, 0.1)', borderRadius: '0.2rem', borderLeft: '2px solid #ff6b6b' }}>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.4rem', color: 'var(--fg4)' }}>Gastos</div>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--primary)' }}>
+                    {mostrar ? `$${gastosHoy.toLocaleString('es-CO')}` : '·····'}
+                  </div>
+                </div>
+                <div style={{ flex: 1, padding: '0.3rem', backgroundColor: 'rgba(81, 207, 102, 0.1)', borderRadius: '0.2rem', borderLeft: '2px solid #51cf66' }}>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.4rem', color: 'var(--fg4)' }}>Ingresos</div>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'hsl(140,50%,50%)' }}>
+                    {mostrar ? `$${ingresoHoy.toLocaleString('es-CO')}` : '·····'}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      </div>
     </div>
   );
 }
@@ -2206,7 +2608,7 @@ function CorrespondenciaTab() {
     let d = editId ? data.map(c => c.id === editId ? entry : c) : [entry, ...data];
     ls.set('correspondencia_data', d); setData(d); setModal(false);
   };
-  const del = id => { const d = data.filter(c => c.id !== id); ls.set('correspondencia_data', d); setData(d); };
+  const del = id => { if (!confirm('¿Eliminar esta correspondencia?')) return; const d = data.filter(c => c.id !== id); ls.set('correspondencia_data', d); setData(d); };
   const cycleStatus = id => {
     const order = ['enviado', 'esperando', 'respondido', 'archivado'];
     const d = data.map(c => c.id === id ? { ...c, estado: order[(order.indexOf(c.estado) + 1) % order.length] } : c);
@@ -2574,6 +2976,10 @@ function App() {
     document.documentElement.setAttribute('data-theme', theme);
     ls.set('astra_theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    setupReminderListeners();
+  }, []);
 
   const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
 
