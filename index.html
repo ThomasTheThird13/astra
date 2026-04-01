@@ -687,7 +687,7 @@ async function backupToGist(type='manual') {
   const snapshot = {};
   BACKUP_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v) snapshot[k] = v; });
   const data = { timestamp: new Date().toISOString(), type, version: '6.0', data: snapshot };
-  const gistId = ls.get('gist_id', null);
+  let gistId = ls.get('gist_id', null);
   const url = gistId ? `https://api.github.com/gists/${gistId}` : 'https://api.github.com/gists';
   try {
     const res = await fetch(url, {
@@ -696,7 +696,13 @@ async function backupToGist(type='manual') {
       body: JSON.stringify({ description: `Astra V6 Backup — ${new Date().toISOString()}`, public: false, files: { 'astra-v6-backup.json': { content: JSON.stringify(data, null, 2) } } })
     });
     const r = await res.json();
-    if (!res.ok) throw new Error(r.message);
+    if (!res.ok) {
+      if (res.status === 404 && gistId) {
+        ls.set('gist_id', null);
+        return backupToGist(type);
+      }
+      throw new Error(r.message || `Error ${res.status}`);
+    }
     if (!gistId && r.id) ls.set('gist_id', r.id);
     ls.set('lastBackup', new Date().toISOString());
     return { ok: true, msg: 'Backup guardado en Gist.' };
