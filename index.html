@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Astra V6 · Sistema Guevara</title>
+<title>Astra V7.2 · Sistema Guevara</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" />
@@ -1119,8 +1119,19 @@ function useGeoWeather() {
 function useDialogue() {
   const lastIdx = useRef(ls.get('last_dialogo_idx', -1));
   const pick = () => {
+    const today = new Date().getDay();
+    const daysOfWeek = [
+      [0, 1, 2],      // Domingo: diálogos 0-2
+      [3, 4, 5],      // Lunes: diálogos 3-5
+      [6, 7, 8, 9],   // Martes: diálogos 6-9
+      [10, 11, 12],   // Miércoles: diálogos 10-12
+      [13, 14, 15],   // Jueves: diálogos 13-15
+      [16, 17, 18],   // Viernes: diálogos 16-18
+      [19, 20, 21],   // Sábado: diálogos 19-21
+    ];
+    const dayIndices = daysOfWeek[today] || daysOfWeek[0];
     let idx;
-    do { idx = Math.floor(Math.random() * dialogos.length); } while (idx === lastIdx.current && dialogos.length > 1);
+    do { idx = dayIndices[Math.floor(Math.random() * dayIndices.length)]; } while (idx === lastIdx.current && dayIndices.length > 1);
     lastIdx.current = idx;
     ls.set('last_dialogo_idx', idx);
     return dialogos[idx];
