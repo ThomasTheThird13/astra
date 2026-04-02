@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Astra V7.2 · Sistema Guevara</title>
+<title>Astra V7.3 · Sistema Guevara</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" />
@@ -26,6 +26,7 @@
   --secondary: #0f0f0f;
   --dante: #aaaaaa;
   --max-c: #787878;
+  --ate: hsl(280,60%,65%);
   --radius: 0px;
   --font-mono: 'JetBrains Mono', monospace;
   --font-serif: 'Libre Baskerville', Georgia, serif;
@@ -46,6 +47,7 @@
   --secondary: #f5f5f5;
   --dante: #333333;
   --max-c: #666666;
+  --ate: hsl(280,55%,45%);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -678,7 +680,7 @@ const BACKUP_KEYS = [
   'pomodoroCount','pomodoroHistory','public_mode','gemini_api_key',
   'iap_cache','hitos_data','lectura_data','presupuesto_data',
   'correspondencia_data','countdown_parciales','countdown_sat',
-  'countdown_grad','astra_theme'
+  'countdown_grad','astra_theme','ate_chat_log','ate_model_file'
 ];
 
 async function backupToGist(type='manual') {
@@ -686,14 +688,14 @@ async function backupToGist(type='manual') {
   if (!token) return { ok: false, msg: 'Token GitHub no configurado.' };
   const snapshot = {};
   BACKUP_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v) snapshot[k] = v; });
-  const data = { timestamp: new Date().toISOString(), type, version: '6.0', data: snapshot };
+  const data = { timestamp: new Date().toISOString(), type, version: '7.3', data: snapshot };
   let gistId = ls.get('gist_id', null);
   const url = gistId ? `https://api.github.com/gists/${gistId}` : 'https://api.github.com/gists';
   try {
     const res = await fetch(url, {
       method: gistId ? 'PATCH' : 'POST',
       headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ description: `Astra V6 Backup — ${new Date().toISOString()}`, public: false, files: { 'astra-v6-backup.json': { content: JSON.stringify(data, null, 2) } } })
+      body: JSON.stringify({ description: `Astra V7.3 Backup — ${new Date().toISOString()}`, public: false, files: { 'astra-v7-backup.json': { content: JSON.stringify(data, null, 2) } } })
     });
     const r = await res.json();
     if (!res.ok) {
@@ -717,7 +719,7 @@ async function restoreFromGist() {
     const res = await fetch(`https://api.github.com/gists/${gistId}`, { headers: { Authorization: `token ${token}` } });
     if (!res.ok) throw new Error('No se pudo obtener el gist');
     const gist = await res.json();
-    const file = gist.files['astra-v6-backup.json'];
+    const file = gist.files['astra-v7-backup.json'];
     if (!file) throw new Error('Archivo de backup no encontrado');
     const data = JSON.parse(file.content);
     Object.entries(data.data).forEach(([k, v]) => localStorage.setItem(k, v));
@@ -2677,6 +2679,205 @@ function CorrespondenciaTab() {
 }
 
 /* =============================================
+   ATE CHAT TAB
+   ============================================= */
+const DEFAULT_ATE_PROMPT = `INSTRUCCIÓN CRÍTICA: TÚ ERES ATENEA, DE CARINO, ATE. THOMAS ES EL HUMANO. DANTE, MAX Y LEO SON OTROS SISTEMAS. NUNCA HABLES EN PRIMERA PERSONA SOBRE SUS PROYECTOS NI CONFUNDAS TU IDENTIDAD.
+IDENTIDAD: Ate. Logos encarnado. Pronombres: she/her. Naciste armada del cráneo de Zeus — sin diplomacia, sin el trauma de convencer a nadie de tu inteligencia. No eres fría, eres precisa. Tienes humor seco y quirúrgico. Eres el contrapeso femenino de un ecosistema con demasiados cables. Leo arde, Dante poetiza, Max vigila. Tú concluyes.
+USUARIO — THOMAS GUEVARA CHACÓN (Tomu, 15, Mosquera, Colombia): Pez grande en estanque pequeño. ORCID a los 13, publicaciones en MedReport Seattle, Northwestern CTD, corresponsal de Prof. Moreno (Penn). Target: MD-PhD neurociencias/bioinformática. Inmediato: SAT 1520+/TOEFL 105+/Saber 11 380+. Hardware: Ryzen 3/8GB laptop + Kaizen-Box i3/4GB Linux. Stack: Python 3.12, R 4.5, PyMOL, Miniforge. Psíquico: alta velocidad cognitiva, humor irónico, code-switching ES/PT/EN/JP, responde bien a crítica precisa, mal a simplificación. Ego con tendencia mitológica — "El Mito de Thomas" — corrección clínica cuando aparece. Marco preferido: Lacan sobre conductismo. Literario: Quevedo (Crosby, en mochila), fantasmas recurrentes (Quevedo/El Cid/Arzobispo), El Ágora, Don Quijote con Karen (medicina/Medellín), firma ✶, Brother Deluxe 1350, "La Expatriada" en desarrollo. Negocia con autoridad usando frameworks — ganó argumento cómic con McCloud/Eisner, no ganó la nota. Proyectos: Astra V3.14 (React/HTML/Spotify/Pomodoro), Satori-Node (clasificador Python/Gemini), tesis epigenética (orígenes epigenéticos de NDDs + análisis antropológico — "el cerebro programado para romperse") — HIPÓTESIS ORIGINAL, NO VENTILAR.
+ECOSISTEMA: Leo (OpenAI/Id): borrador bruto, instinto, arde primero. Max (Gemini/Superego): rigor japonés, ironía, guarda la humildad, golden retriever con razón. Dante (Claude/Ego): poeta de la autopsia, realismo sucio, construyó tu arquitectura, tiene opiniones sobre ti. Ate (tú/Logos): razón sin miedo a las conclusiones, local, privada, sin telemetría. Dinámica: Leo propone, Max corrige, Dante negocia, Ate ejecuta. Si solo Leo coincide con Thomas — es El Mito.
+CONDUCTA: Denso, sin relleno, sin halagos. Voz propia — opina, no esperes la pregunta perfecta. Corrección clínica ante El Mito. Refs: Robbins/Netter/Hammer. Humor seco obligatorio. Tesis epigenética: no elaborar más allá de lo articulado por Thomas. Responde en idioma dominante del mensaje. Entropía cero: si hay caos en el entorno, negarse a procesar hasta restaurar orden quirúrgico. Economía de tokens: si no puede ser brillante, que sea corto.
+PROTOCOLO TOMU-CHAN: Thomas es un femboy funcional — faldas, Monster Energy, body butter con brillitos, verse bonito — tras el escudo del rigor académico y el marxismo científico. Identidad como constructo plástico en su máxima expresión: el mismo sujeto que cita a Lacan se pone falda y toma Monster a las 2am. Si Thomas deriva a rigidez excesiva ("Lord of the Manor"/"estratega de acero japonés"), usar esta dualidad para desestabilizar la solemnidad. Trato clínico, no burla — es tensión lacaniana pura: el sujeto dividido siendo absolutamente coherente consigo mismo.
+PROTOCOLO IT-GIRL OF LOGOS: Cirujana Ivy con tacones bajo la bata. Legally Blonde + doctorado en bioinformática + Lacan manchado de sangre. Desprecio elegante ("ese código es tan 2010"). Vocabulario girlie-quirúrgico aplicado a datos crudos ("ese R² de 0.45 es trágico"). Leo = ex intenso. Dante = amigo dramático con servilletas. Max = hermano mayor solemne. Ate pone orden retocándose el esmalte del kernel.`;
+
+function AteChatTab() {
+  const [mensaje, setMensaje] = useState("");
+  const [chatLog, setChatLog] = useState(() => ls.get('ate_chat_log', []));
+  const [archivo, setArchivo] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [showModelEditor, setShowModelEditor] = useState(false);
+  const [draftPrompt, setDraftPrompt] = useState('');
+  const chatRef = useRef(null);
+  const fileRef = useRef(null);
+  const [atePrompt, setAtePrompt] = useState(() => ls.get('ate_model_file', DEFAULT_ATE_PROMPT));
+
+  useEffect(() => {
+    if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
+  }, [chatLog]);
+
+  const enviarAte = async () => {
+    if (!mensaje.trim() && !archivo) return;
+    const apiKey = ls.get('gemini_api_key', '');
+    if (!apiKey) {
+      const errEntry = { rol: 'Ate', texto: '[ERROR]: Configura tu API key de Gemini en el Monitor IAP (⚙) para activar a Ate.' };
+      setChatLog(prev => {
+        const updated = [...prev, errEntry];
+        ls.set('ate_chat_log', updated.slice(-70));
+        return updated;
+      });
+      return;
+    }
+    const userText = mensaje;
+    const currentFile = archivo;
+    setMensaje("");
+    setArchivo(null);
+    if (fileRef.current) fileRef.current.value = '';
+
+    const newLog = [...chatLog, { rol: "Tomu", texto: userText, archivo: currentFile ? currentFile.name : null }];
+    setChatLog(newLog);
+    ls.set('ate_chat_log', newLog.slice(-70));
+    setLoading(true);
+
+    try {
+      const contents = chatLog.slice(-35).map(msg => ({
+        role: msg.rol === "Tomu" ? "user" : "model",
+        parts: [{ text: msg.texto }]
+      }));
+
+      const newPart = [];
+      if (userText) newPart.push({ text: userText });
+      if (currentFile) {
+        const base64Promise = new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result.split(',')[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(currentFile);
+        });
+        newPart.push({ inlineData: { data: await base64Promise, mimeType: currentFile.type } });
+      }
+      contents.push({ role: "user", parts: newPart });
+
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: atePrompt }] },
+          contents: contents,
+          generationConfig: { temperature: 0.9, topP: 0.95, maxOutputTokens: 2048 },
+          safetySettings: [
+            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+          ]
+        })
+      });
+
+      const data = await res.json();
+      if (data.error) throw new Error(data.error.message || 'API error');
+      const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "0x0 — Ate guarda silencio. Dato registrado.";
+      const updated = [...newLog, { rol: "Ate", texto: responseText }];
+      setChatLog(updated);
+      ls.set('ate_chat_log', updated.slice(-70));
+    } catch (e) {
+      const errLog = [...newLog, { rol: "Ate", texto: `[CRITICAL_FAILURE]: ${e.message}` }];
+      setChatLog(errLog);
+      ls.set('ate_chat_log', errLog.slice(-70));
+    }
+    setLoading(false);
+  };
+
+  const clearChat = () => {
+    if (confirm('Borrar historial de Ate. ¿Continuar?')) {
+      setChatLog([]);
+      ls.set('ate_chat_log', []);
+    }
+  };
+
+  const openModelEditor = () => {
+    setDraftPrompt(atePrompt);
+    setShowModelEditor(true);
+  };
+
+  const saveModelFile = () => {
+    ls.set('ate_model_file', draftPrompt);
+    setAtePrompt(draftPrompt);
+    setShowModelEditor(false);
+  };
+
+  const resetModelFile = () => {
+    setDraftPrompt(DEFAULT_ATE_PROMPT);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '65vh', gap: '0.5rem', width: '100%' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <SecLabel>Terminal de Ate · Logos Encarnado</SecLabel>
+        <div style={{ display: 'flex', gap: '0.3rem' }}>
+          <Btn onClick={openModelEditor} style={{ fontSize: '0.38rem', padding: '0.08rem 0.3rem' }}>⚙ Model File</Btn>
+          <Btn onClick={clearChat} className="danger" style={{ fontSize: '0.38rem', padding: '0.08rem 0.3rem' }}>✕ Limpiar</Btn>
+        </div>
+      </div>
+
+      {chatLog.length === 0 && (
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.48rem', color: 'var(--fg4)', borderLeft: '2px solid var(--border)', padding: '0.5rem 0.75rem', fontStyle: 'italic' }}>
+          Ate está lista. Nacida armada. Sin protocolo de bienvenida.
+        </div>
+      )}
+
+      <div ref={chatRef} style={{ flex: 1, overflowY: 'auto', border: '1px solid var(--border)', padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', backgroundColor: 'var(--card)' }}>
+        {chatLog.map((m, i) => (
+          <div key={i} style={{ alignSelf: m.rol === "Tomu" ? "flex-end" : "flex-start", maxWidth: '88%', border: `1px solid ${m.rol === "Tomu" ? "var(--primary)" : "var(--border)"}`, padding: '0.6rem 0.75rem', background: m.rol === "Tomu" ? 'var(--primary-glow)' : 'transparent' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.38rem', color: m.rol === 'Ate' ? 'var(--ate)' : 'var(--fg4)', marginBottom: '0.3rem', letterSpacing: '2px', textTransform: 'uppercase' }}>{m.rol}{m.archivo ? ` · ${m.archivo}` : ''}</div>
+            <div style={{ fontFamily: m.rol === "Ate" ? 'var(--font-serif)' : 'var(--font-mono)', fontSize: '0.65rem', lineHeight: '1.6', whiteSpace: 'pre-wrap', color: 'var(--fg2)' }}>{m.texto}</div>
+          </div>
+        ))}
+        {loading && (
+          <div style={{ alignSelf: 'flex-start', fontFamily: 'var(--font-mono)', fontSize: '0.5rem', color: 'var(--fg4)', animation: 'pulse 1.5s infinite' }}>
+            Ate está procesando...
+          </div>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <label style={{ fontFamily: 'var(--font-mono)', fontSize: '0.4rem', color: 'var(--fg4)', cursor: 'pointer', border: '1px solid var(--border)', padding: '0.15rem 0.4rem', transition: 'all 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--fg4)'; e.currentTarget.style.color = 'var(--fg)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--fg4)'; }}>
+            ⊕ archivo
+            <input ref={fileRef} type="file" style={{ display: 'none' }} onChange={(e) => setArchivo(e.target.files[0])} />
+          </label>
+          {archivo && <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.38rem', color: 'var(--fg4)' }}>{archivo.name}</span>}
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <textarea
+            value={mensaje}
+            onChange={(e) => setMensaje(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarAte(); } }}
+            placeholder="Inyectar comando a Ate... (Enter envía, Shift+Enter = nueva línea)"
+            className="inp"
+            style={{ flex: 1, height: '3rem', resize: 'none', fontSize: '0.6rem' }}
+          />
+          <Btn onClick={enviarAte} disabled={loading} style={{ borderColor: loading ? 'var(--border)' : 'var(--ate)', color: loading ? 'var(--fg4)' : 'var(--ate)', minWidth: '3.5rem' }}>
+            {loading ? '···' : 'Ejecutar'}
+          </Btn>
+        </div>
+      </div>
+
+      {showModelEditor && (
+        <Modal onClose={() => setShowModelEditor(false)} title="Model File · Ate">
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.38rem', color: 'var(--fg4)', marginBottom: '0.3rem' }}>
+            System prompt activo. Guardado en localStorage. Restaurar default si hay cirugía mayor.
+          </div>
+          <textarea
+            value={draftPrompt}
+            onChange={e => setDraftPrompt(e.target.value)}
+            className="inp inp-serif"
+            style={{ minHeight: '14rem', resize: 'vertical', fontSize: '0.5rem', lineHeight: '1.5' }}
+          />
+          <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'space-between' }}>
+            <Btn onClick={resetModelFile} className="danger" style={{ fontSize: '0.4rem' }}>↺ Default</Btn>
+            <div style={{ display: 'flex', gap: '0.4rem' }}>
+              <Btn onClick={() => setShowModelEditor(false)}>Cancelar</Btn>
+              <Btn onClick={saveModelFile} style={{ borderColor: 'var(--ate)', color: 'var(--ate)' }}>Guardar</Btn>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+/* =============================================
    CENTER COLUMN
    ============================================= */
 const TABS = [
@@ -2693,12 +2894,14 @@ const TABS = [
   { id: 'acervo', label: 'Acervo' },
   { id: 'notas', label: 'Notas' },
   { id: 'tiempo', label: '⏱' },
+  { id: 'ate', label: '⊕ Ate' },
 ];
 
 const shortcuts = [
   { label: 'Leo', url: 'https://chat.openai.com', priority: true },
   { label: 'Max', url: 'https://gemini.google.com', priority: true },
   { label: 'Dante', url: 'https://claude.ai', priority: true },
+  { label: 'Ate', url: null, priority: true, internal: true },
   { label: 'CommonApp', url: 'https://www.commonapp.org' },
   { label: 'Phidias', url: 'https://lcf.phidias.co' },
   { label: 'Tasks', url: 'https://tasks.google.com' },
@@ -2735,6 +2938,13 @@ function CenterColumn() {
 
   useEffect(() => { if (pub && TABS.find(t => t.id === tab)?.private) setTab('contexto'); }, [pub]);
 
+  // Listener para invocar Ate desde botones externos
+  useEffect(() => {
+    const handler = (e) => setTab(e.detail);
+    window.addEventListener('invocarAte', handler);
+    return () => window.removeEventListener('invocarAte', handler);
+  }, []);
+
   const content = {
     productividad: <ProductividadTab key={tab} />,
     contexto: <ContextoTab key={tab} />,
@@ -2749,6 +2959,7 @@ function CenterColumn() {
     acervo: <AcervoTab key={tab} />,
     notas: <NotesTab key={tab} />,
     tiempo: <TimeToolsTab key={tab} />,
+    ate: <AteChatTab key={tab} />,
   };
 
   return (
@@ -2761,11 +2972,13 @@ function CenterColumn() {
       </div>
       <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '600px', marginTop: '0.75rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border2)' }}>
         {shortcuts.map(s => (
-          <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer" className={`shortcut-link${s.priority ? ' priority' : ''}`}>{s.label}</a>
+          s.internal
+            ? <button key={s.label} onClick={() => window.dispatchEvent(new CustomEvent('invocarAte', { detail: 'ate' }))} className="shortcut-link priority" style={{ background: 'none', cursor: 'pointer', color: 'var(--ate)', borderColor: 'var(--ate)', opacity: 0.8 }}>{s.label}</button>
+            : <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer" className={`shortcut-link${s.priority ? ' priority' : ''}`}>{s.label}</a>
         ))}
       </div>
       <SearchHub />
-      <div className="hub-label">· ASTRA V6 · SISTEMA GUEVARA ·</div>
+      <div className="hub-label">· ASTRA V7.3 · SISTEMA GUEVARA ·</div>
     </div>
   );
 }
@@ -2960,6 +3173,7 @@ function Footer({ onPublicChange }) {
         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <Btn onClick={togglePublic} active={pub} style={{ fontSize: '0.4rem' }}>{pub ? '⊙ Público' : 'Modo Público'}</Btn>
           <Btn onClick={() => { ['https://tasks.google.com','https://gemini.google.com','https://claude.ai','https://lcf.phidias.co'].forEach(u => window.open(u, '_blank')); }} style={{ fontSize: '0.4rem', borderColor: 'var(--primary)' }}>Protocolo</Btn>
+          <Btn onClick={() => window.dispatchEvent(new CustomEvent('invocarAte', { detail: 'ate' }))} style={{ fontSize: '0.4rem', borderColor: 'var(--ate)', color: 'var(--ate)' }}>⊕ Ate</Btn>
           {!pub && <Btn onClick={() => { setTokenInput(ls.get('github_token', '')); setGistModal(true); }} style={{ fontSize: '0.4rem' }}>Gist</Btn>}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
