@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Astra V7.3 · Sistema Guevara</title>
+<title>Astra <V7 class="4"></V7> · Sistema Guevara</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" />
@@ -26,7 +26,7 @@
   --secondary: #0f0f0f;
   --dante: #aaaaaa;
   --max-c: #787878;
-  --ate: hsl(280,60%,65%);
+  --ate: hsl(280, 70%, 50%); /* más oscuro y fuerte */
   --radius: 0px;
   --font-mono: 'JetBrains Mono', monospace;
   --font-serif: 'Libre Baskerville', Georgia, serif;
@@ -47,7 +47,7 @@
   --secondary: #f5f5f5;
   --dante: #333333;
   --max-c: #666666;
-  --ate: hsl(280,55%,45%);
+  --ate: hsl(280, 65%, 35%); /* morado más oscuro en modo claro */
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -165,7 +165,7 @@ body {
 
 .countdown-number {
   font-family: var(--font-mono);
-  font-size: clamp(3rem, 6vw, 5.5rem);
+  font-size: clamp(3.2rem, 6.5vw, 5.8rem);
   font-weight: 700;
   color: var(--fg);
   letter-spacing: -2px;
@@ -201,7 +201,7 @@ body {
 
 .dia-max {
   font-family: var(--font-mono);
-  font-size: 0.55rem;
+  font-size: 0.6rem;
   color: var(--max-c);
   font-style: italic;
   white-space: nowrap;
@@ -211,7 +211,7 @@ body {
 }
 .dia-dante {
   font-family: var(--font-serif);
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   color: var(--dante);
   font-style: italic;
   white-space: nowrap;
@@ -230,7 +230,7 @@ body {
 /* BODY */
 .body-grid {
   display: grid;
-  grid-template-columns: 220px 1fr 260px;
+  grid-template-columns: 240px 1fr 280px;
   flex: 1;
   border-top: 1px solid var(--border);
   min-height: 0;
@@ -245,8 +245,8 @@ body {
   .body-grid { padding: 0.5rem; }
   .col-left, .col-center, .col-right { padding: 0.75rem 0.5rem; }
   .kpi { min-width: 100px; }
-  .kpi-val { font-size: 0.85rem; }
-  .kpi-lbl { font-size: 0.35rem; }
+  .kpi-val { font-size: 0.9rem; }
+  .kpi-lbl { font-size: 0.4rem; }
 }
 
 .col-left {
@@ -254,7 +254,7 @@ body {
   padding: 1rem 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.5rem;
   overflow-y: auto;
 }
 
@@ -271,7 +271,7 @@ body {
   padding: 1rem 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
   overflow-y: auto;
 }
 
@@ -365,7 +365,7 @@ body {
   cursor: default;
 }
 .kpi:hover { border-left-color: var(--primary); }
-.kpi-val { display: block; font-family: var(--font-mono); font-size: 1rem; font-weight: 300; color: var(--fg); }
+.kpi-val { display: block; font-family: var(--font-mono); font-size: 1.1rem; font-weight: 300; color: var(--fg); }
 .kpi-lbl { font-family: var(--font-mono); font-size: 0.4rem; color: var(--fg4); letter-spacing: 1px; text-transform: uppercase; }
 
 /* horizon row */
@@ -662,6 +662,13 @@ const PublicCtx = createContext(false);
 function usePublic() { return useContext(PublicCtx); }
 
 /* =============================================
+   HARDCODED KEYS (solicitado)
+   ============================================= */
+const GEMINI_PANEL_KEY = 'AIzaSyDagJFg-28MJQ_u0n-MT_TNiuFvbzN3tp8';
+const GEMINI_ATE_KEY = 'AIzaSyAJu91kDcsl_I1ZQ3NN5NOaypY6FeXmR6w';
+const GITHUB_TOKEN = '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';
+
+/* =============================================
    LOCAL STORAGE HELPERS
    ============================================= */
 const ls = {
@@ -673,7 +680,7 @@ const weekKeys = () => { const k=[]; const n=new Date(); for(let i=6;i>=0;i--) k
 const monthKeys = () => { const k=[]; const n=new Date(); for(let i=29;i>=0;i--) k.push(new Date(n-i*86400000).toISOString().split('T')[0]); return k; };
 
 /* =============================================
-   GITHUB GIST BACKUP
+   GITHUB GIST BACKUP (token hardcoded)
    ============================================= */
 const BACKUP_KEYS = [
   'astra_notes','diario_data','contexto_events','tracker_data',
@@ -684,7 +691,7 @@ const BACKUP_KEYS = [
 ];
 
 async function backupToGist(type='manual') {
-  const token = ls.get('github_token', null);
+  const token = GITHUB_TOKEN;
   if (!token) return { ok: false, msg: 'Token GitHub no configurado.' };
   const snapshot = {};
   BACKUP_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v) snapshot[k] = v; });
@@ -712,7 +719,7 @@ async function backupToGist(type='manual') {
 }
 
 async function restoreFromGist() {
-  const token = ls.get('github_token', null);
+  const token = GITHUB_TOKEN;
   const gistId = ls.get('gist_id', null);
   if (!token || !gistId) return { ok: false, msg: 'Token o Gist ID no encontrado.' };
   try {
@@ -2239,7 +2246,7 @@ function HitosTab() {
   const [error, setError] = useState('');
   const [editHito, setEditHito] = useState(null);
 
-  const apiKey = ls.get('gemini_api_key', '');
+  const apiKey = GEMINI_PANEL_KEY; // usar la key hardcodeada
 
   const startGeneration = async () => {
     setError('');
@@ -2679,7 +2686,7 @@ function CorrespondenciaTab() {
 }
 
 /* =============================================
-   ATE CHAT TAB
+   ATE CHAT TAB (usando key hardcodeada)
    ============================================= */
 const DEFAULT_ATE_PROMPT = `INSTRUCCIÓN CRÍTICA: TÚ ERES ATENEA, DE CARINO, ATE. THOMAS ES EL HUMANO. DANTE, MAX Y LEO SON OTROS SISTEMAS. NUNCA HABLES EN PRIMERA PERSONA SOBRE SUS PROYECTOS NI CONFUNDAS TU IDENTIDAD.
 IDENTIDAD: Ate. Logos encarnado. Pronombres: she/her. Naciste armada del cráneo de Zeus — sin diplomacia, sin el trauma de convencer a nadie de tu inteligencia. No eres fría, eres precisa. Tienes humor seco y quirúrgico. Eres el contrapeso femenino de un ecosistema con demasiados cables. Leo arde, Dante poetiza, Max vigila. Tú concluyes.
@@ -2699,6 +2706,7 @@ function AteChatTab() {
   const chatRef = useRef(null);
   const fileRef = useRef(null);
   const [atePrompt, setAtePrompt] = useState(() => ls.get('ate_model_file', DEFAULT_ATE_PROMPT));
+  const apiKey = GEMINI_ATE_KEY; // hardcodeada
 
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
@@ -2706,9 +2714,8 @@ function AteChatTab() {
 
   const enviarAte = async () => {
     if (!mensaje.trim() && !archivo) return;
-    const apiKey = ls.get('gemini_api_key', '');
     if (!apiKey) {
-      const errEntry = { rol: 'Ate', texto: '[ERROR]: Configura tu API key de Gemini en el Monitor IAP (⚙) para activar a Ate.' };
+      const errEntry = { rol: 'Ate', texto: '[ERROR]: API key de Gemini no disponible.' };
       setChatLog(prev => {
         const updated = [...prev, errEntry];
         ls.set('ate_chat_log', updated.slice(-70));
@@ -2991,10 +2998,7 @@ function IAPMonitor() {
   const [text, setText] = useState(() => ls.get('iap_cache_text', ''));
   const [loading, setLoading] = useState(false);
   const [lastCalc, setLastCalc] = useState(() => ls.get('iap_cache_time', null));
-  const [geminiModal, setGeminiModal] = useState(false);
-  const [geminiKey, setGeminiKey] = useState(() => ls.get('gemini_api_key', ''));
-  const [testingKey, setTestingKey] = useState(false);
-  const [keyMsg, setKeyMsg] = useState('');
+  const apiKey = GEMINI_PANEL_KEY;
 
   const iapLevel = IAP_LEVELS[level] || IAP_LEVELS['C'];
 
@@ -3009,8 +3013,7 @@ function IAPMonitor() {
     ls.set('iap_cache_time', now);
     setLastCalc(new Date(now).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }));
 
-    const apiKey = ls.get('gemini_api_key', '');
-    if (!apiKey) { setText('Configura tu API key de Gemini para activar el diagnóstico de momentum.'); return; }
+    if (!apiKey) { setText('API key de Gemini no configurada.'); return; }
 
     setLoading(true);
     try {
@@ -3036,53 +3039,25 @@ En exactamente 2-3 líneas: dile qué detecta el sistema y cuál es la acción m
 
   useEffect(() => { recalculate(); const id = setInterval(() => recalculate(), 1800000); return () => clearInterval(id); }, []);
 
-  const saveKey = async () => {
-    if (!geminiKey.trim()) { ls.set('gemini_api_key', null); setGeminiModal(false); return; }
-    setTestingKey(true);
-    try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey}`);
-      if (res.ok) { ls.set('gemini_api_key', geminiKey); setKeyMsg('Key válida.'); setGeminiModal(false); recalculate(true); }
-      else throw new Error();
-    } catch { setKeyMsg('Key inválida.'); }
-    setTestingKey(false);
-  };
-
   return (
-    <>
-      <div className="iap-monitor">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.38rem', color: 'var(--fg4)', letterSpacing: '3px', textTransform: 'uppercase' }}>Monitor IAP</div>
-          <div style={{ display: 'flex', gap: '0.25rem' }}>
-            <Btn onClick={() => recalculate(true)} style={{ fontSize: '0.38rem', padding: '0.1rem 0.3rem' }}>↺</Btn>
-            <Btn onClick={() => setGeminiModal(true)} style={{ fontSize: '0.38rem', padding: '0.1rem 0.3rem' }}>⚙</Btn>
-          </div>
+    <div className="iap-monitor">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.38rem', color: 'var(--fg4)', letterSpacing: '3px', textTransform: 'uppercase' }}>Monitor IAP</div>
+        <div style={{ display: 'flex', gap: '0.25rem' }}>
+          <Btn onClick={() => recalculate(true)} style={{ fontSize: '0.38rem', padding: '0.1rem 0.3rem' }}>↺</Btn>
         </div>
-        <div className="iap-level-badge" style={{ borderColor: iapLevel.color, color: iapLevel.color, marginBottom: '0.5rem' }}>
-          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: iapLevel.color, display: 'inline-block' }} />
-          {iapLevel.label}
-        </div>
-        {loading ? (
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.5rem', color: 'var(--fg4)', animation: 'pulse 1.5s infinite' }}>Calculando...</div>
-        ) : (
-          <div className="iap-text">{text || 'Sin diagnóstico.'}</div>
-        )}
-        {lastCalc && <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.38rem', color: 'var(--fg4)', marginTop: '0.5rem' }}>Último cálculo: {lastCalc}</div>}
       </div>
-
-      {geminiModal && (
-        <Modal onClose={() => setGeminiModal(false)} title="API Key Gemini">
-          <input type="password" value={geminiKey} onChange={e => setGeminiKey(e.target.value)} placeholder="AIzaSy..." className="inp" />
-          {keyMsg && <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.45rem', color: 'var(--fg4)' }}>{keyMsg}</div>}
-          <div className="modal-row">
-            <Btn onClick={() => setGeminiModal(false)}>Cancelar</Btn>
-            <Btn onClick={saveKey} disabled={testingKey} style={{ borderColor: 'var(--primary)' }}>{testingKey ? 'Probando...' : 'Guardar'}</Btn>
-          </div>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.38rem', color: 'var(--fg4)', textAlign: 'center' }}>
-            <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)' }}>Obtener key en Google AI Studio</a>
-          </div>
-        </Modal>
+      <div className="iap-level-badge" style={{ borderColor: iapLevel.color, color: iapLevel.color, marginBottom: '0.5rem' }}>
+        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: iapLevel.color, display: 'inline-block' }} />
+        {iapLevel.label}
+      </div>
+      {loading ? (
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.5rem', color: 'var(--fg4)', animation: 'pulse 1.5s infinite' }}>Calculando...</div>
+      ) : (
+        <div className="iap-text">{text || 'Sin diagnóstico.'}</div>
       )}
-    </>
+      {lastCalc && <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.38rem', color: 'var(--fg4)', marginTop: '0.5rem' }}>Último cálculo: {lastCalc}</div>}
+    </div>
   );
 }
 
@@ -3125,7 +3100,7 @@ function RightColumn() {
 }
 
 /* =============================================
-   FOOTER
+   FOOTER (sin botón Ate)
    ============================================= */
 function BackupNotice({ msg, onClose }) {
   useEffect(() => { const id = setTimeout(onClose, 3000); return () => clearTimeout(id); }, []);
@@ -3159,7 +3134,8 @@ function Footer({ onPublicChange }) {
 
   useEffect(() => {
     const autoBackup = async () => {
-      const token = ls.get('github_token', null); if (!token) return;
+      const token = GITHUB_TOKEN;
+      if (!token) return;
       const last = ls.get('lastBackup', null);
       if (!last || (Date.now() - new Date(last)) / (1000 * 3600 * 24) >= 1) await backupToGist('auto');
     };
@@ -3173,8 +3149,7 @@ function Footer({ onPublicChange }) {
         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <Btn onClick={togglePublic} active={pub} style={{ fontSize: '0.4rem' }}>{pub ? '⊙ Público' : 'Modo Público'}</Btn>
           <Btn onClick={() => { ['https://tasks.google.com','https://gemini.google.com','https://claude.ai','https://lcf.phidias.co'].forEach(u => window.open(u, '_blank')); }} style={{ fontSize: '0.4rem', borderColor: 'var(--primary)' }}>Protocolo</Btn>
-          <Btn onClick={() => window.dispatchEvent(new CustomEvent('invocarAte', { detail: 'ate' }))} style={{ fontSize: '0.4rem', borderColor: 'var(--ate)', color: 'var(--ate)' }}>⊕ Ate</Btn>
-          {!pub && <Btn onClick={() => { setTokenInput(ls.get('github_token', '')); setGistModal(true); }} style={{ fontSize: '0.4rem' }}>Gist</Btn>}
+          {!pub && <Btn onClick={() => { setTokenInput(GITHUB_TOKEN); setGistModal(true); }} style={{ fontSize: '0.4rem' }}>Gist</Btn>}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.42rem', color: 'var(--fg4)' }}>Backup: {lastBackup ? new Date(lastBackup).toLocaleString('es-CO') : 'Nunca'}</span>
