@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Astra V7.4 · Sistema Guevara (self-keys)</title>
+<title>Astra V7.5 · Worker Proxy (self-keys)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" />
@@ -196,27 +196,24 @@ select.inp { appearance: none; cursor: pointer; }
 const { useState, useEffect, useRef, useCallback, useContext, createContext } = React;
 
 /* =============================================
-   CONTEXTS (CRÍTICO — usados en todo el árbol)
+   CONTEXTS
    ============================================= */
 const ThemeCtx  = createContext('dark');
 const PublicCtx = createContext(false);
 const usePublic = () => useContext(PublicCtx);
 
 /* =============================================
-   HELPERS PARA OBTENER CLAVES DESDE LOCALSTORAGE
+   HELPERS PARA OBTENER CONFIGURACIÓN DEL WORKER
    ============================================= */
-function getGeminiPanelKey() {
-  return localStorage.getItem('user_gemini_panel_key') || '';
-}
-function getGeminiAteKey() {
-  return localStorage.getItem('user_gemini_ate_key') || '';
+function getWorkerUrl() {
+  return localStorage.getItem('worker_url') || '';
 }
 function getGithubToken() {
   return localStorage.getItem('user_github_token') || '';
 }
 function hasRequiredKeys() {
-  // Para funciones básicas no todas son obligatorias, pero al menos se puede advertir
-  return !!(getGeminiPanelKey() && getGeminiAteKey()); // GitHub es opcional para backup
+  // Solo necesitamos la URL del Worker
+  return !!getWorkerUrl();
 }
 
 /* =============================================
@@ -235,10 +232,11 @@ const monthKeys = () => { const k=[]; const n=new Date(); for(let i=29;i>=0;i--)
    ============================================= */
 const BACKUP_KEYS = [
   'astra_notes','diario_data','contexto_events','tracker_data',
-  'pomodoroCount','pomodoroHistory','public_mode','gemini_api_key',
+  'pomodoroCount','pomodoroHistory','public_mode','worker_url',
   'iap_cache','hitos_data','lectura_data','presupuesto_data',
   'correspondencia_data','countdown_parciales','countdown_sat',
-  'countdown_grad','astra_theme','ate_chat_log','ate_model_file'
+  'countdown_grad','astra_theme','ate_chat_log','ate_model_file',
+  'user_github_token'
 ];
 
 async function backupToGist(type='manual') {
@@ -246,14 +244,14 @@ async function backupToGist(type='manual') {
   if (!token) return { ok: false, msg: 'Token GitHub no configurado. Ve a Ajustes → Claves API.' };
   const snapshot = {};
   BACKUP_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v) snapshot[k] = v; });
-  const data = { timestamp: new Date().toISOString(), type, version: '7.4', data: snapshot };
+  const data = { timestamp: new Date().toISOString(), type, version: '7.5', data: snapshot };
   let gistId = ls.get('gist_id', null);
   const url = gistId ? `https://api.github.com/gists/${gistId}` : 'https://api.github.com/gists';
   try {
     const res = await fetch(url, {
       method: gistId ? 'PATCH' : 'POST',
       headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ description: `Astra V7.4 Backup — ${new Date().toISOString()}`, public: false, files: { 'astra-v7-backup.json': { content: JSON.stringify(data, null, 2) } } })
+      body: JSON.stringify({ description: `Astra V7.5 Backup — ${new Date().toISOString()}`, public: false, files: { 'astra-v7-backup.json': { content: JSON.stringify(data, null, 2) } } })
     });
     const r = await res.json();
     if (!res.ok) {
@@ -775,40 +773,80 @@ function Modal({ onClose, title, children }) {
 }
 
 /* =============================================
-   MODAL DE CONFIGURACIÓN DE CLAVES API
+   MODAL DE CONFIGURACIÓN (Worker URL + GitHub)
    ============================================= */
 function ApiKeyModal({ onClose }) {
-  const [panelKey, setPanelKey] = useState(localStorage.getItem('user_gemini_panel_key') || '');
-  const [ateKey, setAteKey] = useState(localStorage.getItem('user_gemini_ate_key') || '');
+  const [workerUrl, setWorkerUrl] = useState(localStorage.getItem('worker_url') || '');
   const [githubToken, setGithubToken] = useState(localStorage.getItem('user_github_token') || '');
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState(null);
+
+  const testWorker = async () => {
+    if (!workerUrl.trim()) {
+      setTestResult({ ok: false, msg: 'Ingresa una URL de Worker primero.' });
+      return;
+    }
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const res = await fetch(workerUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          test: true,
+          prompt: 'Responde solo "OK" si recibes este mensaje.'
+        })
+      });
+      const data = await res.json();
+      if (res.ok && (data === 'OK' || data?.response === 'OK' || data?.text?.includes('OK'))) {
+        setTestResult({ ok: true, msg: 'Worker respondió correctamente.' });
+      } else {
+        setTestResult({ ok: false, msg: `Respuesta inesperada: ${JSON.stringify(data)}` });
+      }
+    } catch (e) {
+      setTestResult({ ok: false, msg: `Error: ${e.message}` });
+    }
+    setTesting(false);
+  };
+
   const save = () => {
-    localStorage.setItem('user_gemini_panel_key', panelKey.trim());
-    localStorage.setItem('user_gemini_ate_key', ateKey.trim());
+    localStorage.setItem('worker_url', workerUrl.trim());
     localStorage.setItem('user_github_token', githubToken.trim());
     onClose();
     window.location.reload();
   };
+
   const clearAll = () => {
-    if (confirm('¿Eliminar todas las claves guardadas? Necesitarás volver a introducirlas.')) {
-      localStorage.removeItem('user_gemini_panel_key');
-      localStorage.removeItem('user_gemini_ate_key');
+    if (confirm('¿Eliminar todas las claves guardadas? Necesitarás volver a introducir la URL del Worker.')) {
+      localStorage.removeItem('worker_url');
       localStorage.removeItem('user_github_token');
       onClose();
       window.location.reload();
     }
   };
+
   return (
-    <Modal onClose={onClose} title="Configuración de Claves API">
+    <Modal onClose={onClose} title="Configuración de Worker Proxy">
       <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.4rem', color: 'var(--fg4)', marginBottom: '0.5rem' }}>
-        Introduce tus propias claves. Se guardan solo en tu navegador.
+        URL de tu Cloudflare Worker (proxy a Gemini). Las claves API están cifradas en el Worker.
       </div>
-      <input type="text" value={panelKey} onChange={e => setPanelKey(e.target.value)} placeholder="Gemini API Key (Panel)" className="inp" />
-      <input type="text" value={ateKey} onChange={e => setAteKey(e.target.value)} placeholder="Gemini API Key (Ate)" className="inp" />
+      <input type="text" value={workerUrl} onChange={e => setWorkerUrl(e.target.value)} placeholder="https://tu-worker.workers.dev" className="inp" />
+      <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+        <Btn onClick={testWorker} disabled={testing} style={{ fontSize: '0.4rem' }}>{testing ? 'Probando...' : 'Probar Worker'}</Btn>
+        {testResult && (
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.4rem', color: testResult.ok ? 'hsl(140,50%,50%)' : 'var(--primary)' }}>
+            {testResult.msg}
+          </span>
+        )}
+      </div>
       <input type="password" value={githubToken} onChange={e => setGithubToken(e.target.value)} placeholder="GitHub Token (gist)" className="inp" />
       <div className="modal-row">
-        <Btn onClick={clearAll} className="danger">Eliminar todas</Btn>
+        <Btn onClick={clearAll} className="danger">Eliminar todo</Btn>
         <Btn onClick={onClose}>Cancelar</Btn>
         <Btn onClick={save} style={{ borderColor: 'var(--primary)' }}>Guardar</Btn>
+      </div>
+      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.38rem', color: 'var(--fg4)', textAlign: 'center', marginTop: '0.3rem' }}>
+        El Worker debe aceptar POST con JSON y devolver la respuesta de Gemini.
       </div>
     </Modal>
   );
@@ -935,7 +973,7 @@ function Header({ theme, onToggleTheme }) {
 }
 
 /* =============================================
-   LEFT COLUMN (contenido sin cambios, pero se usan los helpers de clave en IAPMonitor, etc.)
+   LEFT COLUMN (contenido sin cambios, pero se usan los helpers de worker en IAPMonitor, etc.)
    ============================================= */
 function PomodoroZone() {
   const pom = usePomodoro();
@@ -1117,7 +1155,7 @@ function LeftColumn() {
 }
 
 /* =============================================
-   CENTER COLUMN (se modifican las llamadas a Gemini para usar getGeminiPanelKey() y getGeminiAteKey())
+   CENTER COLUMN (se modifican las llamadas a Gemini para usar el Worker)
    ============================================= */
 function ProductividadTab() {
   const [idx, setIdx] = useState(() => Math.floor(Math.random() * toxicQuotes.length));
@@ -1742,12 +1780,12 @@ function HitosTab() {
   const [timeline, setTimeline] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const apiKey = getGeminiPanelKey();
+  const workerUrl = getWorkerUrl();
 
   const startGeneration = async () => {
     setError('');
     if (!form.meta || !form.deadline) { setError('Meta y Deadline son obligatorios.'); return; }
-    if (!apiKey) { setError('Configura tu API key de Gemini (Panel) primero.'); return; }
+    if (!workerUrl) { setError('Configura la URL del Worker primero (Ajustes → Claves API).'); return; }
     setLoading(true); setPhase('generating');
     try {
       const prompt = `Eres un planificador académico de precisión. Genera exactamente 3 preguntas cortas y específicas para entender mejor cómo planificar este hito:
@@ -1756,15 +1794,15 @@ Deadline: ${form.deadline}
 Contexto adicional: ${form.contexto || 'ninguno'}
 
 Responde SOLO con JSON: {"preguntas": ["pregunta1", "pregunta2", "pregunta3"]}`;
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+      const res = await fetch(workerUrl, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.3, maxOutputTokens: 300 } })
       });
-      if (!res.ok) throw new Error(`API error: ${res.status}`);
+      if (!res.ok) throw new Error(`Worker error: ${res.status}`);
       const data = await res.json();
       if (data.error) throw new Error(data.error.message);
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      if (!text) throw new Error('Respuesta vacía de Gemini.');
+      if (!text) throw new Error('Respuesta vacía del Worker.');
       const clean = text.replace(/```json|```/g, '').trim();
       const parsed = JSON.parse(clean);
       if (!parsed.preguntas || parsed.preguntas.length !== 3) throw new Error('Formato de preguntas inválido.');
@@ -1786,15 +1824,15 @@ ${answersText}
 
 Responde SOLO con JSON: {"pasos": [{"titulo": "...", "descripcion": "...", "fecha": "YYYY-MM-DD"}, ...]}
 Máximo 8 pasos. Fechas progresivas hasta el deadline. Sin texto adicional.`;
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+      const res = await fetch(workerUrl, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.2, maxOutputTokens: 600 } })
       });
-      if (!res.ok) throw new Error(`API error: ${res.status}`);
+      if (!res.ok) throw new Error(`Worker error: ${res.status}`);
       const data = await res.json();
       if (data.error) throw new Error(data.error.message);
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      if (!text) throw new Error('Respuesta vacía de Gemini.');
+      if (!text) throw new Error('Respuesta vacía del Worker.');
       const clean = text.replace(/```json|```/g, '').trim();
       const parsed = JSON.parse(clean);
       if (!parsed.pasos || !Array.isArray(parsed.pasos)) throw new Error('Formato de pasos inválido.');
@@ -2153,7 +2191,7 @@ function AteChatTab() {
   const chatRef = useRef(null);
   const fileRef = useRef(null);
   const [atePrompt, setAtePrompt] = useState(() => ls.get('ate_model_file', DEFAULT_ATE_PROMPT));
-  const apiKey = getGeminiAteKey();
+  const workerUrl = getWorkerUrl();
 
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
@@ -2161,8 +2199,8 @@ function AteChatTab() {
 
   const enviarAte = async () => {
     if (!mensaje.trim() && !archivo) return;
-    if (!apiKey) {
-      const errEntry = { rol: 'Ate', texto: '[ERROR]: API key de Gemini (Ate) no disponible. Configúrala en Ajustes → Claves API.' };
+    if (!workerUrl) {
+      const errEntry = { rol: 'Ate', texto: '[ERROR]: Worker URL no configurada. Ve a Ajustes → Claves API.' };
       setChatLog(prev => {
         const updated = [...prev, errEntry];
         ls.set('ate_chat_log', updated.slice(-70));
@@ -2200,7 +2238,7 @@ function AteChatTab() {
       }
       contents.push({ role: "user", parts: newPart });
 
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+      const res = await fetch(workerUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2217,7 +2255,7 @@ function AteChatTab() {
       });
 
       const data = await res.json();
-      if (data.error) throw new Error(data.error.message || 'API error');
+      if (data.error) throw new Error(data.error.message || 'Worker error');
       const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "0x0 — Ate guarda silencio. Dato registrado.";
       const updated = [...newLog, { rol: "Ate", texto: responseText }];
       setChatLog(updated);
@@ -2426,20 +2464,20 @@ function CenterColumn() {
         ))}
       </div>
       <SearchHub />
-      <div className="hub-label">· ASTRA V7.4 · SISTEMA GUEVARA ·</div>
+      <div className="hub-label">· ASTRA V7.5 · WORKER PROXY · SISTEMA GUEVARA ·</div>
     </div>
   );
 }
 
 /* =============================================
-   RIGHT COLUMN (IAPMonitor con API key de localStorage)
+   RIGHT COLUMN (IAPMonitor con Worker)
    ============================================= */
 function IAPMonitor() {
   const [level, setLevel] = useState(() => ls.get('iap_cache_level', 'C'));
   const [text, setText] = useState(() => ls.get('iap_cache_text', ''));
   const [loading, setLoading] = useState(false);
   const [lastCalc, setLastCalc] = useState(() => ls.get('iap_cache_time', null));
-  const apiKey = getGeminiPanelKey();
+  const workerUrl = getWorkerUrl();
 
   const iapLevel = IAP_LEVELS[level] || IAP_LEVELS['C'];
 
@@ -2454,7 +2492,7 @@ function IAPMonitor() {
     ls.set('iap_cache_time', now);
     setLastCalc(new Date(now).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }));
 
-    if (!apiKey) { setText('API key de Gemini no configurada. Ve a Ajustes → Claves API.'); return; }
+    if (!workerUrl) { setText('Worker URL no configurada. Ve a Ajustes → Claves API.'); return; }
 
     setLoading(true);
     try {
@@ -2466,7 +2504,7 @@ El algoritmo de momentum calculó que Thomas opera en nivel ${newLevel} (${iapIn
 Contexto operacional: ${ctx}
 
 En exactamente 2-3 líneas: dile qué detecta el sistema y cuál es la acción más urgente. Sin saludos. Sin bullet points. Directo al hueso. Usa segunda persona.`;
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+      const res = await fetch(workerUrl, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.3, maxOutputTokens: 150 } })
       });
@@ -2474,9 +2512,9 @@ En exactamente 2-3 líneas: dile qué detecta el sistema y cuál es la acción m
       const t = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
       setText(t.trim());
       ls.set('iap_cache_text', t.trim());
-    } catch { setText('Error al conectar con Gemini.'); }
+    } catch { setText('Error al conectar con el Worker.'); }
     setLoading(false);
-  }, [apiKey]);
+  }, [workerUrl]);
 
   useEffect(() => { recalculate(); const id = setInterval(() => recalculate(), 1800000); return () => clearInterval(id); }, [recalculate]);
 
@@ -2565,7 +2603,7 @@ function Footer({ onPublicChange }) {
   };
   const togglePublic = () => { const next = !pub; ls.set('public_mode', next); setPub(next); if (onPublicChange) onPublicChange(next); setNotice(next ? 'Modo Público activado' : 'Modo Público desactivado'); };
   const saveToken = async () => {
-    if (!tokenInput.trim()) { ls.set('github_token', null); setNotice('Token eliminado.'); setGistModal(false); return; }
+    if (!tokenInput.trim()) { ls.set('user_github_token', null); setNotice('Token eliminado.'); setGistModal(false); return; }
     const valid = tokenInput.match(/^(ghp_[a-zA-Z0-9]{36}|github_pat_[a-zA-Z0-9]{22}_[a-zA-Z0-9]{59})$/);
     if (!valid) { setNotice('Formato de token inválido.'); return; }
     setTesting(true);
