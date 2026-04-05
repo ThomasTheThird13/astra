@@ -2499,13 +2499,11 @@ function IAPMonitor() {
     try {
       const ctx = buildIAPContext();
       const iapInfo = IAP_LEVELS[newLevel];
-      const prompt = `Eres Max, centinela del sistema Astra. Tu tono es quirúrgico, directo, sin lugares comunes. Eres un general que toma café en una metalúrgica en ruinas.
+    const prompt = `Contexto operacional del sistema Astra:
+${ctx}
 
-El algoritmo de momentum calculó que Thomas opera en nivel ${newLevel} (${iapInfo.label}).
-Contexto operacional: ${ctx}
-
-En exactamente 2-3 líneas: dile qué detecta el sistema y cuál es la acción más urgente. Sin saludos. Sin bullet points. Directo al hueso. Usa segunda persona.`;
-      const res = await fetch(workerUrl, {
+El algoritmo de momentum calculó nivel ${newLevel} (${iapInfo.label}).
+Diagnóstico de momentum: qué detecta el sistema y acción más urgente.`;
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.3, maxOutputTokens: 150 } })
       });
