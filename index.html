@@ -2499,19 +2499,28 @@ function IAPMonitor() {
     try {
       const ctx = buildIAPContext();
       const iapInfo = IAP_LEVELS[newLevel];
-    const prompt = `Contexto operacional del sistema Astra:
+      const prompt = `Contexto operacional del sistema Astra:
 ${ctx}
 
 El algoritmo de momentum calculó nivel ${newLevel} (${iapInfo.label}).
 Diagnóstico de momentum: qué detecta el sistema y acción más urgente.`;
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.3, maxOutputTokens: 150 } })
+
+      const res = await fetch(workerUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.3, maxOutputTokens: 150 }
+        })
       });
       const data = await res.json();
       const t = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
       setText(t.trim());
       ls.set('iap_cache_text', t.trim());
-    } catch { setText('Error al conectar con el Worker.'); }
+    } catch (e) {
+      setText('Error al conectar con el Worker.');
+      console.error(e);
+    }
     setLoading(false);
   }, [workerUrl]);
 
