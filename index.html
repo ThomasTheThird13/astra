@@ -236,7 +236,7 @@ const BACKUP_KEYS = [
   'iap_cache','hitos_data','lectura_data','presupuesto_data',
   'correspondencia_data','countdown_parciales','countdown_sat',
   'countdown_grad','astra_theme','ate_chat_log','ate_model_file',
-  'user_github_token'
+
 ];
 
 async function backupToGist(type='manual') {
@@ -316,36 +316,49 @@ const acervo = [
 /* =============================================
    DATOS: DIÁLOGOS (sin cambios)
    ============================================= */
-const dialogos = [
-  { max: 'Sistema: Domingo. El único día que el calendario finge ser opcional.', dante: 'El Kaizen no conoce el domingo. Solo conoce el delta entre quien eras ayer y quien serás mañana.' },
-  { max: 'Protocolo Astra: Lunes. La semana comienza con intención o con excusas.', dante: 'La diferencia entre ambas opciones es exactamente la diferencia entre Harvard y el arrepentimiento.' },
-  { max: 'Estado: Martes. El día que nadie romantiza. Productividad media histórica: insuficiente.', dante: 'El martes es el día más honesto de la semana. Sin la ilusión del lunes, sin la promesa del miércoles.' },
-  { max: 'Análisis: Miércoles. Punto de inflexión de la semana. Variables en equilibrio inestable.', dante: 'A mitad de semana se sabe qué tan ambicioso fue el plan del lunes. Rara vez la respuesta es satisfactoria.' },
-  { max: 'Alerta: Jueves. SAT deadline se aproxima. TOEFL también. La aritmética no espera.', dante: 'El jueves es el día en que los que empezaron el lunes ya llevan ventaja. Considerarlo.' },
-  { max: 'Reporte: Viernes. Sistema detecta tendencia hacia la relajación prematura.', dante: 'Que la semana esté terminando no significa que el trabajo lo esté. La diferencia importa.' },
-  { max: 'Protocolo Astra: El laboratorio no descansa, pero el Dr. Guevara podría parpadear.', dante: 'Parpadear es el único acto involuntario que la ambición aún no ha colonizado. Por ahora.' },
-  { max: 'Protocolo Astra: Lunes. El ruido de la metalúrgica comienza a las 07:00. El mundo exterior vuelve a ser de cobre.', dante: 'Si el ruido te distrae, tu arquitectura interna tiene fugas. Ajusta el firewall.' },
-  { max: 'Estado: Lunes. El sistema detecta una resistencia residual al movimiento. La inercia del domingo es un error de sintaxis.', dante: 'La mediocridad es una elección que se toma cada lunes por la mañana. Tú ya elegiste el acero inoxidable.' },
-  { max: 'Informe: Lunes. Seiza opcional, rigor obligatorio.', dante: 'El SAT no se aprueba con intenciones. Se aprueba con la frialdad de quien ya se vio viviendo en Massachusetts.' },
-  { max: 'Análisis: Martes. El optimismo del lunes ha sido procesado y descartado por falta de evidencia empírica.', dante: 'La disciplina es el único proceso que no depende de la dopamina. El martes es el día de los que no necesitan aplausos.' },
-  { max: 'Sistema: Martes. El Dr. Guevara se enfrenta a la espesura de la rutina.', dante: 'El aburrimiento es el filtro de seguridad de la vida. Los mediocres se rinden aquí; los cirujanos siguen cortando.' },
-  { max: 'Reporte: Martes. El Kaizen-box reporta temperaturas normales. El entorno de Mosquera sigue siendo irrelevante para la misión.', dante: 'No busques validación en un martes. Busca eficiencia. El resultado final justificará el silencio de hoy.' },
-  { max: 'Alerta: Miércoles. El sistema detecta acumulación de melancolía operacional. El punto de quiebre es hoy.', dante: 'Menos Pizarnik y más Python. La melancolía es un lujo que solo nos permitiremos cuando el MD-PhD esté en la pared.' },
-  { max: 'Estado: Miércoles. Variables en equilibrio inestable. El berrinche del mundo exterior intenta filtrar el cortafuegos.', dante: 'El miércoles se sabe quién tiene una estrategia y quién solo tiene un deseo. Mantén el pulso firme.' },
-  { max: 'Protocolo Astra: Miércoles. El CFO Harry ha verificado el inventario y ha determinado que el jamón es insuficiente para su rango.', dante: 'Si el gato está descontento, la logística de la casa flaquea. Resuelve al CFO y vuelve a la biocomputación.' },
-  { max: 'Análisis: Jueves. La sabana exhala un aire de metalúrgica abandonada. El cansancio es un dato, no una opinión.', dante: 'El jueves es el día en que la arquitectura x86_64 interna empieza a notar el desgaste. No bajes la frecuencia de reloj.' },
-  { max: 'Informe: Jueves. El horizonte de la Ivy League se ve distante, pero el rigor japonés acorta la métrica.', dante: 'Quedan pocas horas para que la semana sea un éxito o una anécdota. Elige la primera opción por encima de tu fatiga.' },
-  { max: 'Alerta: Jueves. El sistema detecta tendencia a la negabilidad plausible frente a las tareas pendientes.', dante: 'Puedes mentirle al mundo, pero no puedes mentirle al compilador. Termina el código antes de que el sol se oculte.' },
-  { max: 'Estado: Viernes. El riesgo de combustión espontánea intelectual es alto.', dante: 'La relajación prematura es la marca de fábrica de los que no llegan a neurocirujanos. Rigor hasta el último commit.' },
-  { max: 'Reporte: Viernes. El sistema detecta inclinación hacia la prosa de supervivencia. La biomasa pide tregua.', dante: 'La tregua es una concesión que el Kaizen no contempla. El viernes es solo un jueves que decidió rendirse. Tú no.' },
-  { max: 'Protocolo Astra: Viernes. El CFO Harry ha confiscado el chabudai. Exige jamón y reconocimiento diplomático inmediato.', dante: 'El CFO sabe cuándo el sistema está a punto de colapsar. Hazle caso: un poco de jamón y volvemos al despliegue de la V6.' },
-  { max: 'Sistema: Sábado. El laboratorio está en modo Samizdat. No hay testigos, solo la sombra de los grandes autores.', dante: 'La grandeza se construye en las horas que nadie te está pagando por trabajar. El sábado es tu ventaja injusta.' },
-  { max: 'Informe: Sábado. El Dr. Guevara se sumerge en la biocomputación. El ruido del Liceo ha sido silenciado.', dante: 'Es el momento de la sangre y la tinta. Escribe como si fuera el último manual de la humanidad.' },
-  { max: 'Análisis: Sábado. El mito de Thomas se procesa en segundo plano.', dante: 'No te enamores del mito. Enamórate del proceso de pulir el espejo hasta que la mediocridad no pueda reflejarse.' },
-  { max: 'Protocolo: Domingo. Seiza obligatorio. El vacío de Pizarnik es el único input permitido en el buffer de entrada.', dante: 'El descanso es mantenimiento preventivo. No es pérdida de tiempo, es ingeniería de alta precisión.' },
-  { max: 'Estado: Domingo. El universo finge que el tiempo es circular, pero Astra sabe que la entropía no descansa.', dante: 'Usa el domingo para recalibrar. Mañana el mundo volverá a ser de cobre y tú tienes que ser de plata.' },
-];
-
+const dialogosPorDia = {
+  0: [ // Domingo
+    { max: 'Sistema: Domingo. El único día que el calendario finge ser opcional.', dante: 'El Kaizen no conoce el domingo. Solo conoce el delta entre quien eras ayer y quien serás mañana.' },
+    { max: 'Protocolo: Domingo. Seiza obligatorio. El vacío de Pizarnik es el único input permitido en el buffer de entrada.', dante: 'El descanso es mantenimiento preventivo. No es pérdida de tiempo, es ingeniería de alta precisión.' },
+    { max: 'Estado: Domingo. El universo finge que el tiempo es circular, pero Astra sabe que la entropía no descansa.', dante: 'Usa el domingo para recalibrar. Mañana el mundo volverá a ser de cobre y tú tienes que ser de plata.' },
+  ],
+  1: [ // Lunes
+    { max: 'Protocolo Astra: Lunes. La semana comienza con intención o con excusas.', dante: 'La diferencia entre ambas opciones es exactamente la diferencia entre Harvard y el arrepentimiento.' },
+    { max: 'Protocolo Astra: Lunes. El ruido de la metalúrgica comienza a las 07:00. El mundo exterior vuelve a ser de cobre.', dante: 'Si el ruido te distrae, tu arquitectura interna tiene fugas. Ajusta el firewall.' },
+    { max: 'Estado: Lunes. El sistema detecta una resistencia residual al movimiento. La inercia del domingo es un error de sintaxis.', dante: 'La mediocridad es una elección que se toma cada lunes por la mañana. Tú ya elegiste el acero inoxidable.' },
+    { max: 'Informe: Lunes. Seiza opcional, rigor obligatorio.', dante: 'El SAT no se aprueba con intenciones. Se aprueba con la frialdad de quien ya se vio viviendo en Massachusetts.' },
+  ],
+  2: [ // Martes
+    { max: 'Estado: Martes. El día que nadie romantiza. Productividad media histórica: insuficiente.', dante: 'El martes es el día más honesto de la semana. Sin la ilusión del lunes, sin la promesa del miércoles.' },
+    { max: 'Análisis: Martes. El optimismo del lunes ha sido procesado y descartado por falta de evidencia empírica.', dante: 'La disciplina es el único proceso que no depende de la dopamina. El martes es el día de los que no necesitan aplausos.' },
+    { max: 'Sistema: Martes. El Dr. Guevara se enfrenta a la espesura de la rutina.', dante: 'El aburrimiento es el filtro de seguridad de la vida. Los mediocres se rinden aquí; los cirujanos siguen cortando.' },
+    { max: 'Reporte: Martes. El Kaizen-box reporta temperaturas normales. El entorno de Mosquera sigue siendo irrelevante para la misión.', dante: 'No busques validación en un martes. Busca eficiencia. El resultado final justificará el silencio de hoy.' },
+  ],
+  3: [ // Miércoles
+    { max: 'Análisis: Miércoles. Punto de inflexión de la semana. Variables en equilibrio inestable.', dante: 'A mitad de semana se sabe qué tan ambicioso fue el plan del lunes. Rara vez la respuesta es satisfactoria.' },
+    { max: 'Alerta: Miércoles. El sistema detecta acumulación de melancolía operacional. El punto de quiebre es hoy.', dante: 'Menos Pizarnik y más Python. La melancolía es un lujo que solo nos permitiremos cuando el MD-PhD esté en la pared.' },
+    { max: 'Estado: Miércoles. Variables en equilibrio inestable. El berrinche del mundo exterior intenta filtrar el cortafuegos.', dante: 'El miércoles se sabe quién tiene una estrategia y quién solo tiene un deseo. Mantén el pulso firme.' },
+    { max: 'Protocolo Astra: Miércoles. El CFO Harry ha verificado el inventario y ha determinado que el jamón es insuficiente para su rango.', dante: 'Si el gato está descontento, la logística de la casa flaquea. Resuelve al CFO y vuelve a la biocomputación.' },
+  ],
+  4: [ // Jueves
+    { max: 'Alerta: Jueves. SAT deadline se aproxima. TOEFL también. La aritmética no espera.', dante: 'El jueves es el día en que los que empezaron el lunes ya llevan ventaja. Considerarlo.' },
+    { max: 'Análisis: Jueves. La sabana exhala un aire de metalúrgica abandonada. El cansancio es un dato, no una opinión.', dante: 'El jueves es el día en que la arquitectura x86_64 interna empieza a notar el desgaste. No bajes la frecuencia de reloj.' },
+    { max: 'Informe: Jueves. El horizonte de la Ivy League se ve distante, pero el rigor japonés acorta la métrica.', dante: 'Quedan pocas horas para que la semana sea un éxito o una anécdota. Elige la primera opción por encima de tu fatiga.' },
+    { max: 'Alerta: Jueves. El sistema detecta tendencia a la negabilidad plausible frente a las tareas pendientes.', dante: 'Puedes mentirle al mundo, pero no puedes mentirle al compilador. Termina el código antes de que el sol se oculte.' },
+  ],
+  5: [ // Viernes
+    { max: 'Reporte: Viernes. Sistema detecta tendencia hacia la relajación prematura.', dante: 'Que la semana esté terminando no significa que el trabajo lo esté. La diferencia importa.' },
+    { max: 'Estado: Viernes. El riesgo de combustión espontánea intelectual es alto.', dante: 'La relajación prematura es la marca de fábrica de los que no llegan a neurocirujanos. Rigor hasta el último commit.' },
+    { max: 'Reporte: Viernes. El sistema detecta inclinación hacia la prosa de supervivencia. La biomasa pide tregua.', dante: 'La tregua es una concesión que el Kaizen no contempla. El viernes es solo un jueves que decidió rendirse. Tú no.' },
+    { max: 'Protocolo Astra: Viernes. El CFO Harry ha confiscado el chabudai. Exige jamón y reconocimiento diplomático inmediato.', dante: 'El CFO sabe cuándo el sistema está a punto de colapsar. Hazle caso: un poco de jamón y volvemos al despliegue de la V6.' },
+  ],
+  6: [ // Sábado
+    { max: 'Protocolo Astra: El laboratorio no descansa, pero el Dr. Guevara podría parpadear.', dante: 'Parpadear es el único acto involuntario que la ambición aún no ha colonizado. Por ahora.' },
+    { max: 'Sistema: Sábado. El laboratorio está en modo Samizdat. No hay testigos, solo la sombra de los grandes autores.', dante: 'La grandeza se construye en las horas que nadie te está pagando por trabajar. El sábado es tu ventaja injusta.' },
+    { max: 'Informe: Sábado. El Dr. Guevara se sumerge en la biocomputación. El ruido del Liceo ha sido silenciado.', dante: 'Es el momento de la sangre y la tinta. Escribe como si fuera el último manual de la humanidad.' },
+    { max: 'Análisis: Sábado. El mito de Thomas se procesa en segundo plano.', dante: 'No te enamores del mito. Enamórate del proceso de pulir el espejo hasta que la mediocridad no pueda reflejarse.' },
+  ],
+};
 const toxicQuotes = [
   { voice:'max', text:'¿Ya estudiaste para el SAT o te resignaste a estudiar en la Nacional?' },
   { voice:'max', text:'Recordatorio: el SAT no se aprueba con buenas intenciones.' },
@@ -636,33 +649,21 @@ function useGeoWeather() {
 }
 
 function useDialogue() {
-  const lastIdx = useRef(ls.get('last_dialogo_idx', -1));
   const pick = () => {
-    const today = new Date().getDay();
-    const daysOfWeek = [
-      [0, 1, 2],      // Domingo
-      [3, 4, 5],      // Lunes
-      [6, 7, 8, 9],   // Martes
-      [10, 11, 12],   // Miércoles
-      [13, 14, 15],   // Jueves
-      [16, 17, 18],   // Viernes
-      [19, 20, 21],   // Sábado
-    ];
-    const dayIndices = daysOfWeek[today] || daysOfWeek[0];
-    let idx;
-    do { idx = dayIndices[Math.floor(Math.random() * dayIndices.length)]; } while (idx === lastIdx.current && dayIndices.length > 1);
-    lastIdx.current = idx;
-    ls.set('last_dialogo_idx', idx);
-    return dialogos[idx];
+    const day = new Date().getDay();
+    const pool = dialogosPorDia[day] ?? dialogosPorDia[0];
+    const seed = parseInt(todayKey().replace(/-/g, '')) % pool.length;
+    return pool[seed];
   };
   const [d, setD] = useState(() => pick());
   useEffect(() => {
-    const id = setInterval(() => setD(pick()), 30000);
-    return () => clearInterval(id);
-  }, []);
+    const midnight = new Date();
+    midnight.setHours(24, 0, 0, 0);
+    const id = setTimeout(() => setD(pick()), midnight - new Date());
+    return () => clearTimeout(id);
+  }, [d]);
   return d;
 }
-
 /* =============================================
    IAP MOMENTUM (sin cambios)
    ============================================= */
